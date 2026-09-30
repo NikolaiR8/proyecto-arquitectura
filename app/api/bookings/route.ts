@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "../../lib/db";
 import { getUserId } from "../../lib/getUserId";
+import { getUserIsAdmin } from "../../lib/getUserIsAdmin";
 
 export async function GET(req: NextRequest) {
     try {
@@ -33,19 +34,39 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "No autorizado. Inicia sesión para reservar." }, { status: 401 });
         }
 
-        const { court_id, booked_date, booked_time, payment_proof } = await req.json();
+        const isAdmin = await getUserIsAdmin(req);
+        const { court_id, booked_date, booked_time, payment_proof, payment_method } = await req.json();
 
         if (!court_id || !booked_date || !booked_time) {
             return NextResponse.json({ error: "Datos de reserva incompletos" }, { status: 400 });
         }
 
-        // La reserva queda en estado 'pending' hasta que el admin confirme
+        // Solo el administrador puede seleccionar 'efectivo' o registrar pagos directos
+        let finalMethod = "transferencia_bancaria";
+        let bookingStatus: "pending" | "confirmed" = "pending";
+        let paymentStatus: "pending" | "paid" = "pending";
+        let proof = payment_proof ? String(payment_proof).trim() : null;
+
+        if (isAdmin && payment_method === "efectivo") {
+            finalMethod = "efectivo";
+            bookingStatus = "confirmed";
+            paymentStatus = "paid";
+            proof = proof || "Cobro en Efectivo (Admin)";
+        } else if (isAdmin && payment_method === "transferencia_bancaria") {
+            finalMethod = "transferencia_bancaria";
+            proof = proof || "TRANSFERENCIA-ADMIN";
+        }
+
         const sql = `INSERT INTO bookings 
             (user_id, court_id, booked_date, booked_time, booking_status, payment_status, payment_method, payment_proof, price) 
-            VALUES (?, ?, ?, ?, 'pending', 'pending', 'transferencia_bancaria', ?, 15.00)`;
-        await pool.execute(sql, [userId, court_id, booked_date, booked_time, payment_proof || null]);
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 15.00)`;
+        await pool.execute(sql, [userId, court_id, booked_date, booked_time, bookingStatus, paymentStatus, finalMethod, proof]);
 
-        return NextResponse.json({ message: "Solicitud de reserva enviada. Pendiente de verificación." }, { status: 201 });
+        return NextResponse.json({ 
+            message: bookingStatus === "confirmed" 
+                ? "Reserva registrada y confirmada exitosamente." 
+                : "Solicitud de reserva enviada. Pendiente de verificación." 
+        }, { status: 201 });
         
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {

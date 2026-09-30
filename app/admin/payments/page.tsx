@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Toaster } from "../../components/ui/sonner";
-import { Hourglass, CheckCircle2, XCircle, Clock, Banknote, User, Calendar } from "lucide-react";
+import { Hourglass, CheckCircle2, XCircle, Clock, Banknote, User, Calendar, Coins } from "lucide-react";
 
 const MONTH_NAMES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 const DAY_NAMES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
@@ -37,16 +37,25 @@ export default function AdminPendingPayments() {
 
     useEffect(() => { fetchPending(); }, [fetchPending]);
 
-    const handleAction = async (bookingId: number, action: "confirmed" | "cancelled") => {
+    const handleAction = async (bookingId: number, action: "confirmed" | "cancelled", method?: "transferencia_bancaria" | "efectivo") => {
         setProcessingId(bookingId);
         try {
             const res = await fetch("/api/admin/bookings/status", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ bookingId, status: action }),
+                body: JSON.stringify({ 
+                    bookingId, 
+                    status: action,
+                    payment_method: method,
+                    payment_proof: method === "efectivo" ? "Cobro en Efectivo Presencial (Admin)" : undefined
+                }),
             });
             if (res.ok) {
-                toast.success(action === "confirmed" ? "✅ Reserva confirmada exitosamente." : "❌ Reserva rechazada y cancelada.");
+                if (action === "confirmed") {
+                    toast.success(method === "efectivo" ? "💵 Reserva confirmada con Pago en Efectivo." : "✅ Transferencia confirmada exitosamente.");
+                } else {
+                    toast.success("❌ Reserva rechazada y cancelada.");
+                }
                 await fetchPending();
             } else {
                 toast.error("No se pudo actualizar el estado.");
@@ -171,22 +180,33 @@ export default function AdminPendingPayments() {
                                 </div>
 
                                 {/* Actions */}
-                                <div className="flex gap-2 shrink-0 self-end sm:self-center">
+                                <div className="flex flex-wrap gap-2 shrink-0 self-end sm:self-center">
                                     <button
                                         disabled={processingId === booking.booking_id}
                                         onClick={() => handleAction(booking.booking_id, "cancelled")}
-                                        className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold rounded-xl bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors cursor-pointer disabled:opacity-50"
+                                        className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors cursor-pointer disabled:opacity-50"
+                                        title="Rechazar y cancelar solicitud"
                                     >
-                                        <XCircle className="w-4 h-4" />
+                                        <XCircle className="w-3.5 h-3.5" />
                                         Rechazar
                                     </button>
                                     <button
                                         disabled={processingId === booking.booking_id}
-                                        onClick={() => handleAction(booking.booking_id, "confirmed")}
-                                        className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm transition-colors cursor-pointer disabled:opacity-50"
+                                        onClick={() => handleAction(booking.booking_id, "confirmed", "efectivo")}
+                                        className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-600 text-white shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+                                        title="Confirmar como cobrado en efectivo"
                                     >
-                                        <CheckCircle2 className="w-4 h-4" />
-                                        {processingId === booking.booking_id ? "Procesando..." : "Confirmar"}
+                                        <Coins className="w-3.5 h-3.5" />
+                                        Cobro en Efectivo
+                                    </button>
+                                    <button
+                                        disabled={processingId === booking.booking_id}
+                                        onClick={() => handleAction(booking.booking_id, "confirmed", "transferencia_bancaria")}
+                                        className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+                                        title="Confirmar con comprobante de transferencia"
+                                    >
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                        {processingId === booking.booking_id ? "Procesando..." : "Confirmar Transferencia"}
                                     </button>
                                 </div>
                             </div>

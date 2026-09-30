@@ -118,6 +118,14 @@ export default function AuditSection({ auditData = [], currentPeriodLabel, onPer
                     <span className="text-xs font-bold text-gray-500 mr-1">Filtrar período:</span>
                     <div className="inline-flex rounded-xl border border-gray-200 p-1 bg-gray-50 text-xs font-bold">
                         <button
+                            onClick={() => onPeriodChange(1, null)}
+                            className={`px-3 py-1.5 rounded-lg transition-all ${
+                                activePeriodDays === 1 ? "bg-emerald-600 text-white shadow-xs" : "text-gray-600 hover:text-gray-900"
+                            }`}
+                        >
+                            Diario (1D)
+                        </button>
+                        <button
                             onClick={() => onPeriodChange(7, null)}
                             className={`px-3 py-1.5 rounded-lg transition-all ${
                                 activePeriodDays === 7 ? "bg-emerald-600 text-white shadow-xs" : "text-gray-600 hover:text-gray-900"
@@ -237,6 +245,7 @@ export default function AuditSection({ auditData = [], currentPeriodLabel, onPer
                             <th className="py-3 px-4">Turno & Fecha</th>
                             <th className="py-3 px-4">Cliente</th>
                             <th className="py-3 px-4 text-right">Tarifa</th>
+                            <th className="py-3 px-4 text-center">Método Pago</th>
                             <th className="py-3 px-4 text-center">Estado Pago</th>
                             <th className="py-3 px-4 text-center">Estado Turno</th>
                             <th className="py-3 px-4">Fecha Creación BD</th>
@@ -245,7 +254,7 @@ export default function AuditSection({ auditData = [], currentPeriodLabel, onPer
                     <tbody className="divide-y divide-gray-100 text-xs">
                         {filteredRecords.length === 0 ? (
                             <tr>
-                                <td colSpan={8} className="py-12 text-center text-gray-400 font-medium">
+                                <td colSpan={9} className="py-12 text-center text-gray-400 font-medium">
                                     No se encontraron registros de auditoría que coincidan con los filtros aplicados.
                                 </td>
                             </tr>
@@ -260,11 +269,12 @@ export default function AuditSection({ auditData = [], currentPeriodLabel, onPer
                                     label: item.payment_status,
                                     class: "bg-gray-100 text-gray-700",
                                 };
+                                const isCash = item.payment_method === "efectivo";
 
                                 return (
                                     <tr key={item.booking_id} className="hover:bg-gray-50/70 transition-colors">
                                         <td className="py-3.5 px-4 font-mono font-bold text-gray-900">
-                                            #{item.booking_id}
+                                             #{item.booking_id}
                                         </td>
                                         <td className="py-3.5 px-4 font-bold text-gray-900 whitespace-nowrap">
                                             {item.court_name}
@@ -286,6 +296,15 @@ export default function AuditSection({ auditData = [], currentPeriodLabel, onPer
                                         </td>
                                         <td className="py-3.5 px-4 text-right font-black text-emerald-700 whitespace-nowrap">
                                             ${Number(item.price || 15).toFixed(2)}
+                                        </td>
+                                        <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                                            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                                                isCash 
+                                                    ? "bg-amber-50 text-amber-800 border-amber-200" 
+                                                    : "bg-blue-50 text-blue-800 border-blue-200"
+                                            }`}>
+                                                {isCash ? "💵 Efectivo" : "🏛️ Transferencia"}
+                                            </span>
                                         </td>
                                         <td className="py-3.5 px-4 text-center whitespace-nowrap">
                                             <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] ${paymentCfg.class}`}>

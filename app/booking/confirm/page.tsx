@@ -7,7 +7,8 @@ import { BookingSummary } from "../../components/booking/BookingSummary";
 import { useRouter } from "next/navigation";
 import { Toaster } from "../../components/ui/sonner";
 import { toast } from "sonner";
-import { Banknote, ShieldCheck, Clock, Copy, CheckCircle2, AlertCircle } from "lucide-react";
+import { Banknote, ShieldCheck, Clock, Copy, CheckCircle2, AlertCircle, Coins, Crown } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const PRICE_PER_SLOT = 15; // USD
 
@@ -18,9 +19,13 @@ const BANK_ACCOUNTS = [
 
 export default function ConfirmBooking() {
     const router = useRouter();
+    const { userRole } = useAuth();
+    const isAdmin = userRole === "admin";
+
     const [loading, setLoading] = useState(true);
     const [bookings, setBookings] = useState<UserBooking[] | null>(null);
     const [loadingFetch, setLoadingFetch] = useState(false);
+    const [paymentMethod, setPaymentMethod] = useState<"transferencia_bancaria" | "efectivo">("transferencia_bancaria");
     const [paymentProof, setPaymentProof] = useState("");
     const [copiedAccount, setCopiedAccount] = useState<string | null>(null);
 
@@ -74,7 +79,8 @@ export default function ConfirmBooking() {
     const handleEnviarSolicitud = async () => {
         if (!bookings || bookings.length === 0) return;
 
-        if (!paymentProof.trim()) {
+        // Si es usuario regular o si es admin y eligió transferencia con comprobante
+        if (!isAdmin && paymentMethod === "transferencia_bancaria" && !paymentProof.trim()) {
             toast.error("Por favor ingresa el número de comprobante de transferencia para continuar.");
             return;
         }
@@ -87,7 +93,8 @@ export default function ConfirmBooking() {
                 court_id: b.court_id,
                 booked_date: b.booked_date,
                 booked_time: b.booked_time,
-                payment_proof: paymentProof.trim(),
+                payment_method: paymentMethod,
+                payment_proof: paymentProof.trim() || (paymentMethod === "efectivo" ? "Cobro en Efectivo (Admin)" : (isAdmin ? "TRANSFERENCIA-ADMIN" : "")),
             }));
 
             const res = await fetch(isBulk ? "/api/bookings/bulk" : "/api/bookings", {
@@ -100,7 +107,11 @@ export default function ConfirmBooking() {
 
             if (res.ok) {
                 localStorage.removeItem("pendingBookings");
-                toast.success("¡Solicitud enviada! Tu reserva está en revisión.");
+                if (isAdmin && paymentMethod === "efectivo") {
+                    toast.success("¡Reserva registrada y cobro en efectivo confirmado!");
+                } else {
+                    toast.success("¡Solicitud enviada! Tu reserva está en revisión.");
+                }
                 setTimeout(() => {
                     router.push(`/reservations?success=true&amount=${bookings.length}`);
                 }, 750);
@@ -177,69 +188,156 @@ export default function ConfirmBooking() {
                                     </div>
                                 </div>
 
-                                {/* Datos bancarios */}
-                                <div className="p-5 bg-emerald-50 rounded-2xl border border-emerald-200 mb-5">
-                                    <div className="flex items-center gap-2 mb-4">
-                                        <Banknote className="w-5 h-5 text-emerald-700" />
-                                        <h3 className="text-base font-bold text-emerald-900">
-                                            Datos para Transferencia Bancaria
-                                        </h3>
-                                        <span className="ml-auto text-xs font-semibold px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full flex items-center gap-1">
-                                            <ShieldCheck className="w-3.5 h-3.5" />
-                                            Ecuador
-                                        </span>
-                                    </div>
-
-                                    <div className="flex flex-col gap-3">
-                                        {BANK_ACCOUNTS.map((acc) => (
-                                            <div
-                                                key={acc.numero}
-                                                className="bg-white rounded-xl border border-emerald-200 px-4 py-3 flex items-center justify-between gap-3"
-                                            >
-                                                <div>
-                                                    <p className="text-xs text-gray-500 font-medium">{acc.banco} · Cuenta {acc.tipo}</p>
-                                                    <p className="text-base font-black text-gray-900 font-mono tracking-wider">{acc.numero}</p>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => copyToClipboard(acc.numero)}
-                                                    className="flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg transition-colors cursor-pointer bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
-                                                >
-                                                    {copiedAccount === acc.numero ? (
-                                                        <><CheckCircle2 className="w-3.5 h-3.5" />Copiado</>
-                                                    ) : (
-                                                        <><Copy className="w-3.5 h-3.5" />Copiar</>
-                                                    )}
-                                                </button>
+                                {/* Role Banner if Admin */}
+                                {isAdmin && (
+                                    <div className="mb-5 p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-emerald-50 border border-amber-200/80 flex items-center justify-between gap-3">
+                                        <div className="flex items-center gap-2.5">
+                                            <span className="p-2 bg-amber-500 text-white rounded-xl shadow-xs">
+                                                <Crown className="w-4 h-4" />
+                                            </span>
+                                            <div>
+                                                <p className="text-xs font-black uppercase tracking-wider text-amber-900">
+                                                    Modo Administrador Activo
+                                                </p>
+                                                <p className="text-xs text-gray-600">
+                                                    Puedes registrar pagos en efectivo directamente o ingresar comprobantes de transferencia.
+                                                </p>
                                             </div>
-                                        ))}
+                                        </div>
                                     </div>
+                                )}
 
-                                    <div className="mt-4 flex items-start gap-2 text-xs text-emerald-800 bg-emerald-100 rounded-xl p-3">
-                                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-emerald-700" />
-                                        <span>
-                                            Transfiere exactamente <strong>${totalAmount.toFixed(2)} USD</strong> a cualquiera de las cuentas y guarda el número de comprobante. Tu reserva quedará en estado <strong>Revisión Pendiente</strong> hasta que el administrador verifique el pago.
-                                        </span>
+                                {/* Payment Method Switcher (Only for Admin) */}
+                                {isAdmin && (
+                                    <div className="mb-6">
+                                        <label className="text-xs font-bold uppercase tracking-wider text-gray-600 block mb-2">
+                                            Seleccionar Método de Pago:
+                                        </label>
+                                        <div className="grid grid-cols-2 gap-3 p-1.5 bg-gray-100 rounded-2xl border border-gray-200">
+                                            <button
+                                                type="button"
+                                                onClick={() => setPaymentMethod("transferencia_bancaria")}
+                                                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                                                    paymentMethod === "transferencia_bancaria"
+                                                        ? "bg-white text-emerald-800 shadow-sm border border-emerald-200"
+                                                        : "text-gray-600 hover:text-gray-900"
+                                                }`}
+                                            >
+                                                <Banknote className="w-4 h-4 text-emerald-600" />
+                                                🏛️ Transferencia Bancaria
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setPaymentMethod("efectivo")}
+                                                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                                                    paymentMethod === "efectivo"
+                                                        ? "bg-white text-emerald-800 shadow-sm border border-emerald-200"
+                                                        : "text-gray-600 hover:text-gray-900"
+                                                }`}
+                                            >
+                                                <Coins className="w-4 h-4 text-amber-600" />
+                                                💵 Pago en Efectivo (Admin)
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
 
-                                {/* Comprobante */}
-                                <div className="mb-5">
-                                    <label className="text-sm font-bold text-gray-800 block mb-2">
-                                        Número de Comprobante de Transferencia <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        placeholder="Ej: 00123456789"
-                                        value={paymentProof}
-                                        onChange={(e) => setPaymentProof(e.target.value)}
-                                        className="w-full border border-gray-300 rounded-xl p-3 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 font-mono transition-all"
-                                    />
-                                    <p className="text-xs text-gray-500 mt-1.5 flex items-center gap-1">
-                                        <Clock className="w-3.5 h-3.5" />
-                                        El administrador revisará tu comprobante y confirmará la reserva en menos de 24 horas.
-                                    </p>
-                                </div>
+                                {/* Cash Payment Admin Box */}
+                                {isAdmin && paymentMethod === "efectivo" ? (
+                                    <div className="p-5 bg-amber-50/70 rounded-2xl border border-amber-200 mb-5">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <Coins className="w-5 h-5 text-amber-700" />
+                                            <h3 className="text-base font-bold text-amber-900">
+                                                Cobro Presencial en Efectivo
+                                            </h3>
+                                            <span className="ml-auto text-xs font-bold px-2.5 py-1 bg-amber-200 text-amber-900 rounded-full flex items-center gap-1">
+                                                Confirmación Inmediata
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-amber-800 mb-4">
+                                            Al registrar la reserva con pago en efectivo, la reserva quedará marcada como <strong>Confirmada</strong> y <strong>Pagada</strong> automáticamente en el sistema sin requerir validación posterior.
+                                        </p>
+
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-700 block mb-1.5">
+                                                Número de Recibo / Nota de Caja (Opcional):
+                                            </label>
+                                            <input
+                                                type="text"
+                                                placeholder="Ej: REC-00941 o Cobro en Mostrador"
+                                                value={paymentProof}
+                                                onChange={(e) => setPaymentProof(e.target.value)}
+                                                className="w-full border border-gray-300 rounded-xl p-3 text-xs bg-white outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 font-mono transition-all"
+                                            />
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        {/* Datos bancarios */}
+                                        <div className="p-5 bg-emerald-50 rounded-2xl border border-emerald-200 mb-5">
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <Banknote className="w-5 h-5 text-emerald-700" />
+                                                <h3 className="text-base font-bold text-emerald-900">
+                                                    Datos para Transferencia Bancaria
+                                                </h3>
+                                                <span className="ml-auto text-xs font-semibold px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full flex items-center gap-1">
+                                                    <ShieldCheck className="w-3.5 h-3.5" />
+                                                    Ecuador
+                                                </span>
+                                            </div>
+
+                                            <div className="flex flex-col gap-3">
+                                                {BANK_ACCOUNTS.map((acc) => (
+                                                    <div
+                                                        key={acc.numero}
+                                                        className="bg-white rounded-xl border border-emerald-200 px-4 py-3 flex items-center justify-between gap-3"
+                                                    >
+                                                        <div>
+                                                            <p className="text-xs text-gray-500 font-medium">{acc.banco} · Cuenta {acc.tipo}</p>
+                                                            <p className="text-base font-black text-gray-900 font-mono tracking-wider">{acc.numero}</p>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => copyToClipboard(acc.numero)}
+                                                            className="flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg transition-colors cursor-pointer bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
+                                                        >
+                                                            {copiedAccount === acc.numero ? (
+                                                                <><CheckCircle2 className="w-3.5 h-3.5" />Copiado</>
+                                                            ) : (
+                                                                <><Copy className="w-3.5 h-3.5" />Copiar</>
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="mt-4 flex items-start gap-2 text-xs text-emerald-800 bg-emerald-100 rounded-xl p-3">
+                                                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-emerald-700" />
+                                                <span>
+                                                    Transfiere exactamente <strong>${totalAmount.toFixed(2)} USD</strong> a cualquiera de las cuentas y guarda el número de comprobante. Tu reserva quedará en estado <strong>Revisión Pendiente</strong> hasta que el administrador verifique el pago.
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Comprobante */}
+                                        <div className="mb-5">
+                                            <label className="text-sm font-bold text-gray-800 block mb-2">
+                                                Número de Comprobante de Transferencia {!isAdmin && <span className="text-red-500">*</span>}
+                                            </label>
+                                            <input
+                                                type="text"
+                                                placeholder="Ej: 00123456789"
+                                                value={paymentProof}
+                                                onChange={(e) => setPaymentProof(e.target.value)}
+                                                className="w-full border border-gray-300 rounded-xl p-3 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 font-mono transition-all"
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1.5 flex items-center gap-1">
+                                                <Clock className="w-3.5 h-3.5" />
+                                                El administrador revisará tu comprobante y confirmará la reserva en menos de 24 horas.
+                                            </p>
+                                        </div>
+                                    </>
+                                )}
                             </div>
 
                             {/* Botones */}

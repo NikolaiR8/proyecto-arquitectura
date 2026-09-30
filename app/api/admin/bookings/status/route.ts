@@ -9,7 +9,7 @@ export async function PATCH(req: NextRequest) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 })
         }
 
-        const { bookingId, status } = await req.json();
+        const { bookingId, status, payment_method, payment_proof } = await req.json();
 
         if (!bookingId || !status) {
             return NextResponse.json({ error: "Faltan parámetros" }, { status: 400 });
@@ -30,8 +30,19 @@ export async function PATCH(req: NextRequest) {
             paymentStatus = "pending";
         }
 
-        const sql = "UPDATE bookings SET booking_status = ?, payment_status = ? WHERE booking_id = ?";
-        const [result] = await pool.execute<ResultSetHeader>(sql, [status, paymentStatus, bookingId]);
+        let sql: string;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let params: any[];
+
+        if (payment_method) {
+            sql = "UPDATE bookings SET booking_status = ?, payment_status = ?, payment_method = ?, payment_proof = COALESCE(?, payment_proof) WHERE booking_id = ?";
+            params = [status, paymentStatus, payment_method, payment_proof || null, bookingId];
+        } else {
+            sql = "UPDATE bookings SET booking_status = ?, payment_status = ? WHERE booking_id = ?";
+            params = [status, paymentStatus, bookingId];
+        }
+
+        const [result] = await pool.execute<ResultSetHeader>(sql, params);
         
         if (result.affectedRows === 0) {
             return NextResponse.json({ error: "Reserva no encontrada" }, { status: 404 });

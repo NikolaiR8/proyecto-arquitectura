@@ -46,8 +46,11 @@ export default function Tabel({ courts, times, activeCell, getBooking, setActive
                                         {isActive && (
                                             <div className="absolute z-30 top-full left-0 mt-1 bg-white border border-gray-200 rounded-2xl shadow-2xl p-4 min-w-56">
                                                 <div className="text-xs font-semibold text-gray-800">{booking.first_name} {booking.last_name}</div>
-                                                <div className="text-xs text-gray-500 mb-1">{booking.email}</div>
-                                                <div className="text-xs font-bold text-emerald-700 mb-3">{booking.court_name} · {booking.booked_time}</div>
+                                                <div className="text-xs text-gray-500 mb-0.5">{booking.email}</div>
+                                                <div className="text-xs font-bold text-emerald-700">{booking.court_name} · {booking.booked_time}</div>
+                                                <div className="text-[11px] font-semibold text-gray-600 mb-3">
+                                                    {booking.payment_method === "efectivo" ? "💵 Pago en Efectivo" : "🏛️ Transferencia"} · ${Number(booking.price || 15).toFixed(2)} USD
+                                                </div>
                                                 <div className="flex flex-col gap-1.5">
                                                     <StatusButton variant="completed" disabled={booking.booking_status === "completed"} onClick={() => updateStatus(booking.booking_id, "completed")} />
                                                     <StatusButton variant="no_show" disabled={booking.booking_status === "no_show"} onClick={() => updateStatus(booking.booking_id, "no_show")} />

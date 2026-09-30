@@ -18,6 +18,7 @@ interface DaysDropDownProps {
 }
 
 const options = [
+    { days: 1, label: "📅 Diario (Hoy)" },
     { days: 7, label: "📅 Semanal (Últimos 7 días)" },
     { days: 30, label: "📅 Mensual (Últimos 30 días)" },
     { days: 90, label: "📅 Trimestral (Últimos 90 días)" },

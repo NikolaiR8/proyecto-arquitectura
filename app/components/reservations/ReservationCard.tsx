@@ -151,8 +151,8 @@ export default function ReservationCard({ index, reservation, isPast = false, on
                     </div>
 
                     {reservation.price && (
-                        <span className="text-xs text-gray-400 font-medium">
-                            ${Number(reservation.price).toFixed(2)} USD · Transferencia Bancaria
+                        <span className="text-xs text-gray-500 font-medium">
+                            ${Number(reservation.price).toFixed(2)} USD · {reservation.payment_method === "efectivo" ? "💵 Pago en Efectivo" : "🏛️ Transferencia Bancaria"}
                         </span>
                     )}
 

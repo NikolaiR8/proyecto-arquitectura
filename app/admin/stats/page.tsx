@@ -45,7 +45,7 @@ export default function AdminStatsPage() {
         setLoading(true);
         try {
             const to = customFromTo?.to ?? new Date().toISOString().split("T")[0];
-            const from = customFromTo?.from ?? new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+            const from = customFromTo?.from ?? (days === 1 ? to : new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split("T")[0]);
             
             const res = await fetch(`/api/admin/stats?from=${from}&to=${to}`);
             if (res.ok) {
@@ -84,6 +84,7 @@ export default function AdminStatsPage() {
         if (customFromTo) {
             return `Rango personalizado (${customFromTo.from} al ${customFromTo.to})`;
         }
+        if (days === 1) return "Diario (Hoy)";
         if (days === 7) return "Últimos 7 días (Semanal)";
         if (days === 30) return "Últimos 30 días (Mensual)";
         if (days === 90) return "Últimos 90 días (Trimestral)";
