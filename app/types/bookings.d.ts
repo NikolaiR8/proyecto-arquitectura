@@ -90,8 +90,49 @@ type HeatMapData = {
     heatMapMatrix: Array<number[]>;
 };
 
+type RevenueData = {
+    total_revenue: number;
+    pending_revenue: number;
+    refunded_revenue: number;
+    total_paid_bookings: number;
+    average_ticket: number;
+};
+
+type CourtUsageItem = {
+    court_id: number;
+    court_name: string;
+    sport: string;
+    booking_count: number;
+    completed_count: number;
+    total_court_revenue: number;
+    usage_percentage: number;
+    is_most_used: boolean;
+};
+
+type AuditBookingItem = {
+    booking_id: number;
+    court_id: number;
+    court_name: string;
+    sport: string;
+    user_id: number;
+    first_name: string;
+    last_name: string;
+    email: string;
+    booked_date: string;
+    booked_time: string;
+    booking_status: "pending" | "confirmed" | "cancelled" | "completed" | "no_show";
+    payment_status: "paid" | "pending" | "refunded";
+    payment_method: string;
+    payment_proof?: string | null;
+    price: number;
+    created_at: string;
+};
+
 type AdminData = {
     kpiData: KpiData;
+    revenueData: RevenueData;
+    courtUsageData: CourtUsageItem[];
+    auditData: AuditBookingItem[];
     bookingsBreakdownData: BookingsBreakdownData;
     sportsBreakdownData: SportBreakdownData[];
     heatMapData: HeatMapData;
