@@ -52,6 +52,8 @@ type Reservation = Pick<Booking, "booking_id" | "court_id" | "booked_date" | "bo
 type UserBooking = BookingSummary & {
     court_name: string;
     price?: number;
+    customer_name?: string | null;
+    customer_id?: string | null;
 };
 
 type AdminBooking = Pick<Booking, "booking_id" | "booked_time" | "booking_status"> & 
@@ -62,6 +64,8 @@ type AdminBooking = Pick<Booking, "booking_id" | "booked_time" | "booking_status
         payment_proof?: string;
         price?: number;
         booked_date?: string;
+        customer_name?: string | null;
+        customer_id?: string | null;
     };
 
 type KpiData = {
@@ -126,6 +130,8 @@ type AuditBookingItem = {
     payment_proof?: string | null;
     price: number;
     created_at: string;
+    customer_name?: string | null;
+    customer_id?: string | null;
 };
 
 type AdminData = {

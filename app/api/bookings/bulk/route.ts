@@ -20,6 +20,9 @@ export async function POST(req: NextRequest) {
             payment_method?: string;
         }[] = Array.isArray(body) ? body : body.bookings;
 
+        const customer_name: string | null = Array.isArray(body) ? null : (body.customer_name?.trim() || null);
+        const customer_id: string | null = Array.isArray(body) ? null : (body.customer_id?.trim() || null);
+
         if (!Array.isArray(bookings) || bookings.length === 0 || bookings.length > 20) {
             return NextResponse.json({ error: "Entrada inválida de reservas" }, { status: 400 });
         }
@@ -49,9 +52,9 @@ export async function POST(req: NextRequest) {
             for (const booking of bookings) {
                 await connection.execute(
                     `INSERT INTO bookings 
-                        (user_id, court_id, booked_date, booked_time, booking_status, payment_status, payment_method, payment_proof, price) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 15.00)`,
-                    [userId, booking.court_id, booking.booked_date, booking.booked_time, bookingStatus, paymentStatus, finalMethod, proof]
+                        (user_id, court_id, booked_date, booked_time, booking_status, payment_status, payment_method, payment_proof, price, customer_name, customer_id) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 15.00, ?, ?)`,
+                    [userId, booking.court_id, booking.booked_date, booking.booked_time, bookingStatus, paymentStatus, finalMethod, proof, customer_name, customer_id]
                 );
             }
             await connection.commit();

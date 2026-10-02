@@ -109,6 +109,8 @@ export async function GET(req: NextRequest) {
             b.payment_method,
             b.payment_proof,
             b.price,
+            b.customer_name,
+            b.customer_id,
             DATE_FORMAT(b.created_at, '%Y-%m-%d %H:%i:%s') AS created_at
             FROM bookings b
             JOIN courts c ON b.court_id = c.court_id
@@ -135,6 +137,8 @@ export async function GET(req: NextRequest) {
             payment_proof: row.payment_proof ? String(row.payment_proof) : null,
             price: Number(row.price || 15),
             created_at: String(row.created_at),
+            customer_name: row.customer_name ? String(row.customer_name) : null,
+            customer_id: row.customer_id ? String(row.customer_id) : null,
         }));
 
         // 5. Desglose de Estado de Reservas

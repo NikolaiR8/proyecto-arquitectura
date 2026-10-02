@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
         }
 
         // Mostrar slots ocupados: pending y confirmed bloquean el turno
-        const sql = `SELECT court_id, booked_date, booked_time FROM bookings
+        const sql = `SELECT court_id, DATE_FORMAT(booked_date, '%Y-%m-%d') AS booked_date, booked_time FROM bookings
                     WHERE booking_status IN ('pending', 'confirmed', 'completed') AND
                     booked_date BETWEEN ? AND
                     DATE_ADD(?, INTERVAL ? DAY)`;
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
         }
 
         const isAdmin = await getUserIsAdmin(req);
-        const { court_id, booked_date, booked_time, payment_proof, payment_method } = await req.json();
+        const { court_id, booked_date, booked_time, payment_proof, payment_method, customer_name, customer_id } = await req.json();
 
         if (!court_id || !booked_date || !booked_time) {
             return NextResponse.json({ error: "Datos de reserva incompletos" }, { status: 400 });
@@ -58,9 +58,9 @@ export async function POST(req: NextRequest) {
         }
 
         const sql = `INSERT INTO bookings 
-            (user_id, court_id, booked_date, booked_time, booking_status, payment_status, payment_method, payment_proof, price) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 15.00)`;
-        await pool.execute(sql, [userId, court_id, booked_date, booked_time, bookingStatus, paymentStatus, finalMethod, proof]);
+            (user_id, court_id, booked_date, booked_time, booking_status, payment_status, payment_method, payment_proof, price, customer_name, customer_id) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 15.00, ?, ?)`;
+        await pool.execute(sql, [userId, court_id, booked_date, booked_time, bookingStatus, paymentStatus, finalMethod, proof, customer_name?.trim() || null, customer_id?.trim() || null]);
 
         return NextResponse.json({ 
             message: bookingStatus === "confirmed" 

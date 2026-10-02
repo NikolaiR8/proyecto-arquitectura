@@ -26,6 +26,8 @@ CREATE TABLE IF NOT EXISTS bookings (
     payment_method VARCHAR(64) DEFAULT 'transferencia_bancaria',
     payment_proof VARCHAR(255) DEFAULT NULL,
     price DECIMAL(10, 2) DEFAULT 15.00,
+    customer_name VARCHAR(128) DEFAULT NULL,
+    customer_id VARCHAR(64) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (user_id) REFERENCES users(user_id),
@@ -36,6 +38,10 @@ CREATE TABLE IF NOT EXISTS bookings (
     ) STORED,
 	UNIQUE KEY uq_active_slot (active_slot)
 );
+
+-- Migración: agregar columnas si ya existe la tabla (seguro para DBs existentes)
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS customer_name VARCHAR(128) DEFAULT NULL;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS customer_id VARCHAR(64) DEFAULT NULL;
 
 -- 10 canchas de fútbol 5
 INSERT IGNORE INTO courts (court_name, sport) VALUES ('Cancha 1', 'futbol5');

@@ -287,12 +287,31 @@ export default function AuditSection({ auditData = [], currentPeriodLabel, onPer
                                             </div>
                                         </td>
                                         <td className="py-3.5 px-4">
-                                            <div className="font-bold text-gray-900 whitespace-nowrap">
-                                                {item.first_name} {item.last_name}
-                                            </div>
-                                            <div className="text-[11px] text-gray-400 truncate max-w-[160px]">
-                                                {item.email}
-                                            </div>
+                                            {item.customer_name ? (
+                                                <div>
+                                                    <div className="font-bold text-gray-900 whitespace-nowrap flex items-center gap-1.5">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                                                        {item.customer_name}
+                                                    </div>
+                                                    {item.customer_id && (
+                                                        <div className="text-[11px] text-amber-700 font-mono font-semibold">
+                                                            ID: {item.customer_id}
+                                                        </div>
+                                                    )}
+                                                    <div className="text-[10px] text-gray-400">
+                                                        vía {item.first_name} {item.last_name}
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div>
+                                                    <div className="font-bold text-gray-900 whitespace-nowrap">
+                                                        {item.first_name} {item.last_name}
+                                                    </div>
+                                                    <div className="text-[11px] text-gray-400 truncate max-w-[160px]">
+                                                        {item.email}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </td>
                                         <td className="py-3.5 px-4 text-right font-black text-emerald-700 whitespace-nowrap">
                                             ${Number(item.price || 15).toFixed(2)}

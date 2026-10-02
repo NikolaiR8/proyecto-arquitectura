@@ -57,7 +57,11 @@ export default function ReservationsComponent() {
         getReservations();
         if (success && !hasShownToast.current) {
             hasShownToast.current = true;
-            toast.success(`¡Solicitud enviada! ${amount || 1} turno(s) en Revisión Pendiente. El administrador verificará tu comprobante pronto.`);
+            if (method === "admin") {
+                toast.success(`¡${amount || 1} turno(s) confirmado(s) exitosamente por el administrador!`);
+            } else {
+                toast.success(`¡Solicitud enviada! ${amount || 1} turno(s) en Revisión Pendiente. El administrador verificará tu comprobante pronto.`);
+            }
             router.replace(pathname, { scroll: false });
         }
     }, []);

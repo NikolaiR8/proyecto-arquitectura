@@ -28,6 +28,8 @@ export default function ConfirmBooking() {
     const [paymentMethod, setPaymentMethod] = useState<"transferencia_bancaria" | "efectivo">("transferencia_bancaria");
     const [paymentProof, setPaymentProof] = useState("");
     const [copiedAccount, setCopiedAccount] = useState<string | null>(null);
+    const [customerName, setCustomerName] = useState("");
+    const [customerId, setCustomerId] = useState("");
 
     useEffect(() => {
         const getBookings = () => {
@@ -97,23 +99,34 @@ export default function ConfirmBooking() {
                 payment_proof: paymentProof.trim() || (paymentMethod === "efectivo" ? "Cobro en Efectivo (Admin)" : (isAdmin ? "TRANSFERENCIA-ADMIN" : "")),
             }));
 
+            const extraAdminFields = isAdmin ? {
+                customer_name: customerName.trim() || null,
+                customer_id: customerId.trim() || null,
+            } : {};
+
             const res = await fetch(isBulk ? "/api/bookings/bulk" : "/api/bookings", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(isBulk ? payloadBookings : payloadBookings[0])
+                body: JSON.stringify(
+                    isBulk 
+                        ? { bookings: payloadBookings, payment_method: paymentMethod, payment_proof: paymentProof.trim() || null, ...extraAdminFields }
+                        : { ...payloadBookings[0], ...extraAdminFields }
+                )
             });
 
             const data = await res.json();
 
             if (res.ok) {
                 localStorage.removeItem("pendingBookings");
-                if (isAdmin && paymentMethod === "efectivo") {
-                    toast.success("¡Reserva registrada y cobro en efectivo confirmado!");
+                if (isAdmin) {
+                    toast.success(paymentMethod === "efectivo" 
+                        ? "¡Reserva registrada y cobro en efectivo confirmado!"
+                        : `¡Reserva confirmada exitosamente! ${bookings.length} turno(s) registrado(s).`);
                 } else {
                     toast.success("¡Solicitud enviada! Tu reserva está en revisión.");
                 }
                 setTimeout(() => {
-                    router.push(`/reservations?success=true&amount=${bookings.length}`);
+                    router.push(`/reservations?success=true&amount=${bookings.length}&method=${isAdmin ? "admin" : "pending"}`);
                 }, 750);
             } else if (res.status === 401) {
                 toast.error("Debes iniciar sesión para confirmar tu reserva.");
@@ -204,6 +217,45 @@ export default function ConfirmBooking() {
                                                 </p>
                                             </div>
                                         </div>
+                                    </div>
+                                )}
+
+                                {/* Admin: Datos del cliente */}
+                                {isAdmin && (
+                                    <div className="mb-6 p-4 rounded-2xl bg-white border border-gray-200">
+                                        <p className="text-xs font-black uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5">
+                                            <Crown className="w-3.5 h-3.5 text-amber-500" />
+                                            Datos del Cliente (Opcional)
+                                        </p>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div>
+                                                <label className="text-xs font-bold text-gray-700 block mb-1.5">
+                                                    Nombre del Cliente:
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Ej: Juan Pérez"
+                                                    value={customerName}
+                                                    onChange={(e) => setCustomerName(e.target.value)}
+                                                    className="w-full border border-gray-300 rounded-xl p-3 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-400/20 transition-all"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-bold text-gray-700 block mb-1.5">
+                                                    Cédula / ID del Cliente:
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Ej: 1712345678"
+                                                    value={customerId}
+                                                    onChange={(e) => setCustomerId(e.target.value)}
+                                                    className="w-full border border-gray-300 rounded-xl p-3 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-400/20 transition-all font-mono"
+                                                />
+                                            </div>
+                                        </div>
+                                        <p className="text-[11px] text-gray-400 mt-2">
+                                            Si se deja vacío, la reserva quedará a nombre del usuario autenticado. Las reservas existentes sin ID mantienen el usuario del sistema.
+                                        </p>
                                     </div>
                                 )}
 
