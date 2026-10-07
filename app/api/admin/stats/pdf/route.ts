@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
         const summaryWidths = [260, 250, 260];
         pdf.startTable("Actividad de reservas", [
             { label: "Estado de reserva", width: summaryWidths[0] },
-            { label: "Deporte", width: summaryWidths[1] },
+            { label: "Deporte: TOTAL DE RESERVA", width: summaryWidths[1] },
             { label: "Cobros por método", width: summaryWidths[2] },
         ]);
         const statusItems = [...statuses.entries()].map(([status, count]) => `${bookingLabel[status] || status}: ${count}`);
