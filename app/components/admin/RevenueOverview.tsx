@@ -13,7 +13,7 @@ export default function RevenueOverview({ revenueData }: RevenueOverviewProps) {
     const pendingRevenue = Number(revenueData.pending_revenue || 0);
     const refundedRevenue = Number(revenueData.refunded_revenue || 0);
     const totalPaidBookings = Number(revenueData.total_paid_bookings || 0);
-    const avgTicket = Number(revenueData.average_ticket || 15);
+    const avgTicket = Number(revenueData.average_ticket || 0);
     const potentialRevenue = totalRevenue + pendingRevenue;
     const collectionEfficiency = potentialRevenue > 0 ? ((totalRevenue / potentialRevenue) * 100).toFixed(0) : "100";
 
@@ -58,7 +58,7 @@ export default function RevenueOverview({ revenueData }: RevenueOverviewProps) {
                         </div>
                     </div>
                     <div className="mt-4 pt-3 border-t border-white/15 flex items-center justify-between text-xs text-emerald-100">
-                        <span>Turnos confirmados</span>
+                        <span>Turnos pagados</span>
                         <span className="font-bold bg-white/20 px-2 py-0.5 rounded-md">{totalPaidBookings} turnos</span>
                     </div>
                 </div>
@@ -114,7 +114,7 @@ export default function RevenueOverview({ revenueData }: RevenueOverviewProps) {
                     <div>
                         <div className="flex items-center justify-between mb-2">
                             <span className="text-xs font-extrabold uppercase tracking-wider text-gray-500">
-                                No Concretado / Anulado
+                                Reembolsado
                             </span>
                             <span className="p-1.5 bg-red-50 rounded-lg text-red-600">
                                 <AlertCircle className="w-4 h-4" />
@@ -126,9 +126,9 @@ export default function RevenueOverview({ revenueData }: RevenueOverviewProps) {
                         </div>
                     </div>
                     <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-                        <span>Cancelaciones y no shows</span>
+                        <span>Pagos reembolsados</span>
                         <span className="font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md">
-                            ${refundedRevenue.toFixed(0)} anulados
+                            ${refundedRevenue.toFixed(0)} reembolsados
                         </span>
                     </div>
                 </div>

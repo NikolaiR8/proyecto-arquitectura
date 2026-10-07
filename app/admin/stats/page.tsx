@@ -17,12 +17,15 @@ import {
     PieChart, 
     RefreshCw,
     Clock,
-    LayoutDashboard
+    LayoutDashboard,
+    Download
 } from "lucide-react";
 
 export default function AdminStatsPage() {
     const [adminData, setAdminData] = useState<AdminData | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const [downloading, setDownloading] = useState(false);
+    const [downloadError, setDownloadError] = useState("");
     const [activeTab, setActiveTab] = useState<"all" | "revenue" | "courts" | "audit">("all");
     
     const [days, setDays] = useState<number>(() => {
@@ -51,13 +54,39 @@ export default function AdminStatsPage() {
             if (res.ok) {
                 const data: AdminData = await res.json();
                 setAdminData(data);
+            } else {
+                setAdminData(null);
             }
         } catch (err) {
             console.error("Error al cargar estadísticas de administración:", err);
+            setAdminData(null);
         } finally {
             setLoading(false);
         }
     }, [days, customFromTo]);
+
+    const handleDownloadPDF = async () => {
+        setDownloading(true);
+        setDownloadError("");
+        try {
+            const to = customFromTo?.to ?? new Date().toISOString().split("T")[0];
+            const from = customFromTo?.from ?? (days === 1 ? to : new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split("T")[0]);
+            const res = await fetch(`/api/admin/stats/pdf?from=${from}&to=${to}`);
+            if (!res.ok) throw new Error("No se pudo descargar el informe.");
+            const url = URL.createObjectURL(await res.blob());
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `estadisticas_alquileres_${from}_${to}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } catch (error) {
+            setDownloadError(error instanceof Error ? error.message : "No se pudo descargar el informe.");
+        } finally {
+            setDownloading(false);
+        }
+    };
 
     useEffect(() => {
         fetchStats();
@@ -119,6 +148,14 @@ export default function AdminStatsPage() {
 
                 <div className="flex items-center gap-2 flex-wrap">
                     <button
+                        onClick={handleDownloadPDF}
+                        disabled={loading || downloading || !adminData}
+                        className="flex items-center gap-2 px-4 py-3 bg-emerald-600 text-white text-xs font-bold rounded-2xl hover:bg-emerald-700 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+                    >
+                        <Download className="w-4 h-4" />
+                        {downloading ? "Generando PDF..." : "Descargar PDF"}
+                    </button>
+                    <button
                         onClick={() => fetchStats()}
                         disabled={loading}
                         className="p-3 bg-white border border-gray-200 rounded-2xl hover:bg-gray-50 transition-colors text-gray-700 shadow-xs cursor-pointer disabled:opacity-50"
@@ -134,6 +171,8 @@ export default function AdminStatsPage() {
                     />
                 </div>
             </div>
+
+            {downloadError && <p role="alert" className="w-full max-w-7xl text-sm text-red-700 mb-4">{downloadError}</p>}
 
             {/* Quick Navigation Filter Tabs */}
             <div className="w-full max-w-7xl flex items-center gap-2 overflow-x-auto pb-2 mb-8">

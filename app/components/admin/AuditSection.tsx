@@ -58,8 +58,8 @@ export default function AuditSection({ auditData = [], currentPeriodLabel, onPer
     });
 
     const totalAuditedAmount = filteredRecords.reduce((acc, curr) => {
-        if (curr.payment_status === "paid" || curr.booking_status === "confirmed" || curr.booking_status === "completed") {
-            return acc + Number(curr.price || 15);
+        if (curr.payment_status === "paid") {
+            return acc + Number(curr.price ?? 0);
         }
         return acc;
     }, 0);

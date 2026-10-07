@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "../../../lib/db";
 import { RowDataPacket } from "mysql2";
+import { getUserIsAdmin } from "../../../lib/getUserIsAdmin";
 
 export async function GET(req: NextRequest) {
+    if (!await getUserIsAdmin(req)) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const { searchParams } = new URL(req.url);
     const from = searchParams.get("from");
     const to = searchParams.get("to");
@@ -38,11 +43,11 @@ export async function GET(req: NextRequest) {
 
         // 2. Módulo de Ingresos y Finanzas
         const revenueSql = `SELECT
-            COALESCE(SUM(CASE WHEN b.payment_status = 'paid' OR b.booking_status IN ('confirmed', 'completed') THEN b.price ELSE 0 END), 0) AS total_revenue,
+            COALESCE(SUM(CASE WHEN b.payment_status = 'paid' THEN b.price ELSE 0 END), 0) AS total_revenue,
             COALESCE(SUM(CASE WHEN b.payment_status = 'pending' AND b.booking_status = 'pending' THEN b.price ELSE 0 END), 0) AS pending_revenue,
-            COALESCE(SUM(CASE WHEN b.payment_status = 'refunded' OR b.booking_status = 'cancelled' THEN b.price ELSE 0 END), 0) AS refunded_revenue,
-            COUNT(CASE WHEN b.payment_status = 'paid' OR b.booking_status IN ('confirmed', 'completed') THEN 1 END) AS total_paid_bookings,
-            COALESCE(ROUND(AVG(CASE WHEN b.payment_status = 'paid' OR b.booking_status IN ('confirmed', 'completed') THEN b.price END), 2), 15.00) AS average_ticket
+            COALESCE(SUM(CASE WHEN b.payment_status = 'refunded' THEN b.price ELSE 0 END), 0) AS refunded_revenue,
+            COUNT(CASE WHEN b.payment_status = 'paid' THEN 1 END) AS total_paid_bookings,
+            COALESCE(ROUND(AVG(CASE WHEN b.payment_status = 'paid' THEN b.price END), 2), 0) AS average_ticket
             FROM bookings b
             WHERE b.booked_date BETWEEN ? AND ?
         `;
@@ -53,7 +58,7 @@ export async function GET(req: NextRequest) {
             pending_revenue: Number(rawRevenue?.pending_revenue ?? 0),
             refunded_revenue: Number(rawRevenue?.refunded_revenue ?? 0),
             total_paid_bookings: Number(rawRevenue?.total_paid_bookings ?? 0),
-            average_ticket: Number(rawRevenue?.average_ticket ?? 15.00),
+            average_ticket: Number(rawRevenue?.average_ticket ?? 0),
         };
 
         // 3. Desglose de Canchas y Mapa de Ocupación por Cancha
@@ -63,7 +68,7 @@ export async function GET(req: NextRequest) {
             c.sport,
             COUNT(CASE WHEN b.booking_id IS NOT NULL AND b.booking_status != 'cancelled' THEN 1 END) AS booking_count,
             COUNT(CASE WHEN b.booking_status = 'completed' THEN 1 END) AS completed_count,
-            COALESCE(SUM(CASE WHEN b.booking_status IN ('confirmed', 'completed') OR b.payment_status = 'paid' THEN b.price ELSE 0 END), 0) AS total_court_revenue
+            COALESCE(SUM(CASE WHEN b.payment_status = 'paid' THEN b.price ELSE 0 END), 0) AS total_court_revenue
             FROM courts c
             LEFT JOIN bookings b ON c.court_id = b.court_id AND b.booked_date BETWEEN ? AND ?
             GROUP BY c.court_id, c.court_name, c.sport
