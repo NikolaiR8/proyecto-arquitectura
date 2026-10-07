@@ -21,6 +21,15 @@ type ReportRow = RowDataPacket & {
 };
 
 const money = (value: number) => `$${value.toFixed(2)}`;
+const bookingLabel: Record<string, string> = {
+    pending: "Pendiente", confirmed: "Confirmada", completed: "Completada",
+    cancelled: "Cancelada", no_show: "No asistió",
+};
+const paymentLabel: Record<string, string> = {
+    pending: "Pendiente", paid: "Pagado", refunded: "Reembolsado",
+};
+const methodLabel = (value: string) => value === "transferencia_bancaria" ? "Transferencia bancaria" : value === "efectivo" ? "Efectivo" : value;
+const sportLabel = (value: string) => value === "futbol5" ? "Fútbol 5" : value;
 
 export async function GET(req: NextRequest) {
     if (!await getUserIsAdmin(req)) {
@@ -76,48 +85,58 @@ export async function GET(req: NextRequest) {
         }
 
         const pdf = new PdfReport();
-        pdf.line("CanchasDioguinho - Informe de alquileres", 18, true, 26);
-        pdf.line(`Período de turnos: ${from} al ${to}`, 11, true);
-        pdf.line(`Generado: ${new Date().toISOString().replace("T", " ").slice(0, 19)} UTC`, 9);
-        pdf.space();
-        pdf.line("Resumen financiero (USD)", 13, true, 22);
-        pdf.line(`Ingresos cobrados: ${money(paid)}  |  Reservas pagadas: ${paidCount}  |  Ticket promedio: ${money(paidCount ? paid / paidCount : 0)}`);
-        pdf.line(`Por cobrar (reservas pendientes): ${money(pending)}  |  Reembolsos registrados: ${money(refunded)}`);
-        pdf.line("Los ingresos incluyen solo pagos marcados como pagados; los reembolsos se muestran por separado.", 9);
-        pdf.space();
-        pdf.line(`Reservas del periodo: ${rows.length}`, 13, true, 22);
-        pdf.line([...statuses.entries()].map(([status, count]) => `${status}: ${count}`).join("   ") || "Sin reservas", 9);
-        pdf.line(`Por deporte: ${[...sports.entries()].map(([sport, count]) => `${sport}: ${count}`).join("   ") || "Sin reservas"}`, 9);
-        pdf.line(`Cobrado por metodo: ${[...methods.entries()].map(([method, amount]) => `${method}: ${money(amount)}`).join("   ") || "Sin cobros"}`, 9);
-        pdf.space();
-        pdf.line("Rendimiento por cancha", 13, true, 22);
-        for (const [name, court] of courts) {
-            pdf.line(`${name}: ${court.bookings} reservas, ${money(court.paid)} cobrados`, 10);
+        const period = `Turnos: ${from} al ${to}`;
+        pdf.title("Informe de alquileres", period, `${new Date().toISOString().replace("T", " ").slice(0, 19)} UTC`);
+        pdf.section("Resumen financiero (USD)");
+        pdf.metrics([
+            { label: "Ingresos cobrados", value: money(paid) },
+            { label: "Por cobrar", value: money(pending) },
+            { label: "Reembolsos", value: money(refunded) },
+            { label: "Ticket promedio", value: money(paidCount ? paid / paidCount : 0) },
+        ]);
+        pdf.note(`${rows.length} reservas en el período  |  ${paidCount} pagadas. Los ingresos incluyen solo pagos marcados como pagados.`);
+
+        const summaryWidths = [260, 250, 260];
+        pdf.startTable("Actividad de reservas", [
+            { label: "Estado de reserva", width: summaryWidths[0] },
+            { label: "Deporte", width: summaryWidths[1] },
+            { label: "Cobros por método", width: summaryWidths[2] },
+        ]);
+        const statusItems = [...statuses.entries()].map(([status, count]) => `${bookingLabel[status] || status}: ${count}`);
+        const sportItems = [...sports.entries()].map(([sport, count]) => `${sportLabel(sport)}: ${count}`);
+        const methodItems = [...methods.entries()].map(([method, amount]) => `${methodLabel(method)}: ${money(amount)}`);
+        const summaryCount = Math.max(statusItems.length, sportItems.length, methodItems.length, 1);
+        for (let i = 0; i < summaryCount; i++) {
+            pdf.tableRow([statusItems[i] || "", sportItems[i] || "", methodItems[i] || ""], summaryWidths, i % 2 === 1);
         }
-        if (!courts.size) pdf.line("Sin registros en este periodo.");
-        pdf.space();
-        pdf.line("Detalle de reservas y pagos", 13, true, 22);
-        pdf.row([
-            { value: "ID", x: 36, max: 8 }, { value: "Fecha", x: 72, max: 12 },
-            { value: "Hora", x: 143, max: 7 }, { value: "Cancha", x: 188, max: 16 },
-            { value: "Cliente", x: 290, max: 25 }, { value: "Reserva", x: 452, max: 12 },
-            { value: "Pago", x: 530, max: 12 }, { value: "Metodo", x: 608, max: 18 },
-            { value: "USD", x: 735, max: 12 },
+
+        const courtWidths = [330, 210, 230];
+        pdf.startTable("Rendimiento por cancha", [
+            { label: "Cancha", width: courtWidths[0] },
+            { label: "Reservas", width: courtWidths[1] },
+            { label: "Ingresos cobrados", width: courtWidths[2] },
         ], true);
+        [...courts.entries()].forEach(([name, court], index) => {
+            pdf.tableRow([name, String(court.bookings), money(court.paid)], courtWidths, index % 2 === 1);
+        });
+        if (!courts.size) pdf.tableRow(["Sin registros en este período", "0", money(0)], courtWidths);
+
+        pdf.startDetails([
+            { label: "ID", width: 38 }, { label: "Fecha y hora", width: 95 },
+            { label: "Cancha", width: 95 }, { label: "Cliente", width: 130 },
+            { label: "Reserva", width: 85 }, { label: "Pago", width: 70 },
+            { label: "Método", width: 150 }, { label: "USD", width: 107 },
+        ]);
         for (const row of rows) {
-            pdf.row([
-                { value: String(row.booking_id), x: 36, max: 8 },
-                { value: row.booked_date, x: 72, max: 12 },
-                { value: row.booked_time, x: 143, max: 7 },
-                { value: row.court_name, x: 188, max: 16 },
-                { value: `${row.first_name} ${row.last_name}`, x: 290, max: 25 },
-                { value: row.booking_status, x: 452, max: 12 },
-                { value: row.payment_status, x: 530, max: 12 },
-                { value: row.payment_method ?? "", x: 608, max: 18 },
-                { value: money(Number(row.price ?? 0)), x: 735, max: 12 },
-            ]);
-            pdf.line(`   ${row.email}  |  Comprobante: ${row.payment_proof || "N/A"}`, 8, false, 18);
+            pdf.detailRow([
+                String(row.booking_id), `${row.booked_date} ${row.booked_time}`,
+                row.court_name, `${row.first_name} ${row.last_name}`,
+                bookingLabel[row.booking_status] || row.booking_status,
+                paymentLabel[row.payment_status] || row.payment_status,
+                methodLabel(row.payment_method ?? ""), money(Number(row.price ?? 0)),
+            ], row.email, row.payment_proof || "N/A");
         }
+        if (!rows.length) pdf.note("No hay reservas registradas en este período.");
 
         return new NextResponse(new Uint8Array(pdf.toBuffer()), {
             headers: {
