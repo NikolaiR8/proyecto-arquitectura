@@ -11,9 +11,9 @@ export const metadata: Metadata = {
   title: "CanchasDioguinho - Reserva y Pago de Canchas de Fútbol 5",
   description: "Sistema de reservas y pago online para canchas sintéticas de fútbol 5",
   icons: {
-    icon: "/favicon.png",
-    shortcut: "/favicon.png",
-    apple: "/favicon.png",
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/icon.png",
   },
 };
 
@@ -29,8 +29,8 @@ export default function RootLayout({
       </head>
       <body className={`${dmSans.className} bg-slate-50 min-h-screen text-gray-900 antialiased relative`}>
         {/* Subtle global background texture using stadium wallpaper with high opacity overlay */}
-        <div 
-          aria-hidden="true" 
+        <div
+          aria-hidden="true"
           className="fixed inset-0 pointer-events-none z-0 bg-cover bg-center opacity-[0.035] filter saturate-50"
           style={{ backgroundImage: "url('/stadium-bg.jpg')" }}
         />
