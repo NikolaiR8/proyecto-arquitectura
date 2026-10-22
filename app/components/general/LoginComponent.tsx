@@ -74,19 +74,17 @@ export default function LoginComponent() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/85 pointer-events-none" />
 
-            {/* Clear Messi silhouette on the side */}
-            <div 
-                aria-hidden="true"
-                className="absolute -right-8 bottom-0 w-80 sm:w-[420px] h-[520px] bg-contain bg-no-repeat bg-bottom opacity-70 pointer-events-none filter drop-shadow-[0_10px_25px_rgba(0,0,0,0.9)] hidden lg:block"
-                style={{ backgroundImage: "url('/messi-bg.jpg')" }}
-            />
-
             {successful && <SuccessfulAuthentification authType="Login" />}
 
-            <form onSubmit={handleLogin} className="relative z-10 flex flex-col text-center w-full max-w-md p-8 sm:p-10 gap-6 bg-black/75 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-white/15 text-white">
-                <div>
-                    <span className="text-4xl filter drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]">⚽</span>
-                    <h1 className="font-black text-3xl mt-3 text-white title-glow-hover">
+            <form onSubmit={handleLogin} className="relative z-10 flex flex-col text-center w-full max-w-md p-8 sm:p-10 gap-6 bg-black/85 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-white/15 text-white">
+                <div className="flex flex-col items-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
+                        src="/logo.png" 
+                        alt="Canchas Dioguinho" 
+                        className="w-20 h-20 object-contain drop-shadow-[0_0_20px_rgba(52,211,153,0.5)] mb-2 hover:scale-105 transition-transform" 
+                    />
+                    <h1 className="font-black text-3xl text-white title-glow-hover">
                         Iniciar Sesión
                     </h1>
                     <p className="text-sm text-gray-300 mt-1 font-medium">Ingresa a tu cuenta para gestionar tus reservas</p>

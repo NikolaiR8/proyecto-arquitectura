@@ -20,21 +20,17 @@ export default function Home() {
             <div className="absolute inset-0 bg-radial from-black/40 via-black/75 to-black/95 pointer-events-none" />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/80 pointer-events-none" />
 
-            {/* Messi & Cristiano Ronaldo - Vivid & Clear on Sides */}
-            <div 
-                aria-hidden="true"
-                className="absolute left-[-20px] lg:left-4 bottom-0 w-72 sm:w-88 lg:w-[420px] h-[480px] bg-contain bg-no-repeat bg-bottom opacity-75 pointer-events-none filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.95)] contrast-110 transition-transform duration-500 hover:scale-105"
-                style={{ backgroundImage: "url('/messi-bg.jpg')" }}
-            />
-            <div 
-                aria-hidden="true"
-                className="absolute right-[-20px] lg:right-4 bottom-0 w-72 sm:w-88 lg:w-[420px] h-[480px] bg-contain bg-no-repeat bg-bottom opacity-75 pointer-events-none filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.95)] contrast-110 transition-transform duration-500 hover:scale-105"
-                style={{ backgroundImage: "url('/cr7-bg.jpg')" }}
-            />
-
             <div className="relative z-10 flex flex-col items-center justify-center max-w-4xl text-center">
+                {/* Logo Oficial Canchas Dioguinho */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                    src="/logo.png" 
+                    alt="Logo Canchas Dioguinho" 
+                    className="w-28 h-28 sm:w-36 sm:h-36 object-contain drop-shadow-[0_0_35px_rgba(52,211,153,0.6)] mb-6 hover:scale-105 transition-transform"
+                />
+
                 <span className="inline-flex items-center gap-2 px-5 py-2 mb-6 text-xs sm:text-sm font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-500/40 rounded-full uppercase tracking-widest backdrop-blur-md shadow-[0_4px_20px_rgba(16,185,129,0.25)] hover:border-emerald-400 hover:text-white transition-all cursor-default text-glow-hover">
-                    ⚽ COMPLEJO DEPORTIVO DIOGUINHO · FÚTBOL DE ÉLITE
+                    COMPLEJO DEPORTIVO DIOGUINHO · FÚTBOL DE ÉLITE
                 </span>
 
                 <h1 className="font-black text-4xl sm:text-6xl lg:text-7xl text-white mb-6 tracking-tight leading-[1.1] title-glow-hover cursor-default">

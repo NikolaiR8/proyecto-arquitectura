@@ -5,8 +5,24 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash CHAR(60) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     role ENUM('customer', 'admin') NOT NULL DEFAULT 'customer',
+    avatar_url LONGTEXT DEFAULT NULL,
+    phone VARCHAR(32) DEFAULT NULL,
+    bio VARCHAR(255) DEFAULT NULL,
+    position VARCHAR(64) DEFAULT NULL,
+    preferred_foot VARCHAR(32) DEFAULT NULL,
+    favorite_court VARCHAR(64) DEFAULT NULL,
+    email_verified BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_banned BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE IF NOT EXISTS email_verifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
+    code VARCHAR(10) NOT NULL,
+    expires_at DATETIME NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_email (email)
 );
 
 CREATE TABLE IF NOT EXISTS courts (
