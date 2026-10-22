@@ -10,6 +10,11 @@ const dmSans = DM_Sans({ subsets: ['latin'], weight: ['400', '600', '700'] });
 export const metadata: Metadata = {
   title: "CanchasDioguinho - Reserva y Pago de Canchas de Fútbol 5",
   description: "Sistema de reservas y pago online para canchas sintéticas de fútbol 5",
+  icons: {
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
@@ -19,6 +24,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
+      <head>
+        <link rel="icon" href="/favicon.png" type="image/png" />
+      </head>
       <body className={`${dmSans.className} bg-slate-50 min-h-screen text-gray-900 antialiased relative`}>
         {/* Subtle global background texture using stadium wallpaper with high opacity overlay */}
         <div 

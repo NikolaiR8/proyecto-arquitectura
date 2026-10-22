@@ -85,7 +85,7 @@ export default function LoginComponent() {
 
             <form onSubmit={handleLogin} className="relative z-10 flex flex-col text-center w-full max-w-md p-8 sm:p-10 gap-6 bg-black/75 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-white/15 text-white">
                 <div>
-                    <span className="text-4xl filter drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]">⚽</span>
+                    <img src="/favicon.png" alt="Logo CanchasDioguinho" className="w-12 h-12 mx-auto rounded-full object-cover border border-emerald-500/40 filter drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]" />
                     <h1 className="font-black text-3xl mt-3 text-white title-glow-hover">
                         Iniciar Sesión
                     </h1>

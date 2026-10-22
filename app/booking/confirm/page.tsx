@@ -276,7 +276,7 @@ export default function ConfirmBooking() {
                                                 }`}
                                             >
                                                 <Banknote className="w-4 h-4 text-emerald-600" />
-                                                🏛️ Transferencia Bancaria
+                                                Transferencia Bancaria
                                             </button>
                                             <button
                                                 type="button"
@@ -288,7 +288,7 @@ export default function ConfirmBooking() {
                                                 }`}
                                             >
                                                 <Coins className="w-4 h-4 text-amber-600" />
-                                                💵 Pago en Efectivo (Admin)
+                                                Pago en Efectivo (Admin)
                                             </button>
                                         </div>
                                     </div>

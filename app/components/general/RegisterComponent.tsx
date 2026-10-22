@@ -5,18 +5,33 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import SuccessfulAuthentification from "./SuccessfulAuthentification";
+import CedulaInputField, { CedulaValidationState } from "./CedulaInputField";
 
 export default function RegisterComponent() {
     const searchParams = useSearchParams();
     const rawRedirect = searchParams.get("redirectTo");
     const redirectTo = rawRedirect ? `/login?redirectTo=${decodeURIComponent(rawRedirect)}` : "/login";
+    const initialCedula = searchParams.get("cedula") || "";
 
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-    const [formErrors, setFormErrors] = useState({ firstName: false, lastName: false, email: false, password: false });
+    const [cedulaState, setCedulaState] = useState<CedulaValidationState>({
+        cedula: initialCedula,
+        isValidFormat: false,
+        isAvailable: false,
+        isChecking: false,
+        errorMessage: null,
+    });
+    const [formErrors, setFormErrors] = useState({
+        firstName: false,
+        lastName: false,
+        email: false,
+        password: false,
+        cedula: false,
+    });
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState({ error: false, message: "" });
     const [successful, setSuccessful] = useState(false);
@@ -25,16 +40,31 @@ export default function RegisterComponent() {
         event.preventDefault();
         
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        const isCedulaValid = cedulaState.isValidFormat && cedulaState.isAvailable && !cedulaState.isChecking;
+
         const newFormErrors = {
             firstName: !firstName.trim(),
             lastName: !lastName.trim(),
             email: !email.trim() || !emailRegex.test(email.trim()),
-            password: !password.trim() || password.length < 6
+            password: !password.trim() || password.length < 6,
+            cedula: !isCedulaValid,
         };
             
         setFormErrors(newFormErrors);
         
-        if (newFormErrors.firstName || newFormErrors.lastName || newFormErrors.email || newFormErrors.password) {
+        if (
+            newFormErrors.firstName || 
+            newFormErrors.lastName || 
+            newFormErrors.email || 
+            newFormErrors.password || 
+            newFormErrors.cedula
+        ) {
+            if (newFormErrors.cedula) {
+                setApiError({
+                    error: true,
+                    message: cedulaState.errorMessage || "Por favor ingresa una cédula ecuatoriana válida de 10 dígitos que no esté registrada.",
+                });
+            }
             return;
         }
         
@@ -49,14 +79,17 @@ export default function RegisterComponent() {
                     firstName: firstName,
                     lastName: lastName,
                     password: password,
-                    email: email
+                    email: email,
+                    cedula: cedulaState.cedula,
                 })
             });
 
             const data = await res.json();
 
             if (!res.ok) {
-                const errMsg = data.error === "Email already exist" ? "Este correo electrónico ya está registrado." : (data.error ?? "Error al registrarse.");
+                const errMsg = data.error === "Email already exist" 
+                    ? "Este correo electrónico ya está registrado." 
+                    : (data.error ?? "Error al registrarse.");
                 setApiError({ error: true, message: errMsg });
             } else {
                 setSuccessful(true);
@@ -115,7 +148,11 @@ export default function RegisterComponent() {
 
             <form onSubmit={handleRegister} className="relative z-10 flex flex-col text-center w-full max-w-lg p-8 sm:p-10 gap-6 bg-black/75 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-white/15 text-white">
                 <div>
-                    <span className="text-4xl filter drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]">⚽</span>
+                    <img 
+                        src="/favicon.png" 
+                        alt="Logo CanchasDioguinho" 
+                        className="w-12 h-12 mx-auto rounded-full object-cover border border-emerald-500/40 filter drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]" 
+                    />
                     <h1 className="font-black text-3xl mt-3 text-white title-glow-hover">
                         Crear Cuenta
                     </h1>
@@ -147,6 +184,20 @@ export default function RegisterComponent() {
                             />
                             {formErrors.lastName && <span className="text-xs text-red-400 font-medium">Campo obligatorio</span>}
                         </div>
+                    </div>
+
+                    {/* Nuevo Campo Cédula de Identidad con Validación Módulo 10 y Asíncrona */}
+                    <div className="flex flex-col gap-1.5">
+                        <CedulaInputField
+                            id="register-cedula-input"
+                            value={cedulaState.cedula}
+                            onChange={(state) => {
+                                setCedulaState(state);
+                                if (state.isValidFormat && state.isAvailable) {
+                                    setFormErrors((prev) => ({ ...prev, cedula: false }));
+                                }
+                            }}
+                        />
                     </div>
 
                     <div className="flex flex-col gap-1.5">
@@ -192,7 +243,7 @@ export default function RegisterComponent() {
                 <div className="flex flex-col gap-4 mt-2">
                     <button
                         type="submit" 
-                        disabled={isLoading}
+                        disabled={isLoading || cedulaState.isChecking}
                         className="text-base font-extrabold bg-emerald-500 hover:bg-emerald-400 text-gray-950 w-full py-3.5 rounded-xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:shadow-[0_0_30px_rgba(16,185,129,0.7)] disabled:opacity-50 cursor-pointer hover:scale-[1.02]"
                     >
                         {isLoading ? "Creando cuenta..." : "Crear Cuenta"}
