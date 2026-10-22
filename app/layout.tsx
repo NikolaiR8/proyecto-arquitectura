@@ -12,6 +12,11 @@ const dmSans = DM_Sans({ subsets: ['latin'], weight: ['400', '600', '700'] });
 export const metadata: Metadata = {
   title: "CanchasDioguinho - Reserva y Pago de Canchas de Fútbol 5",
   description: "Sistema de reservas y pago online para canchas sintéticas de fútbol 5",
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({
@@ -21,10 +26,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
+<<<<<<< HEAD
       <body className={`${dmSans.className} bg-slate-50 min-h-screen text-gray-900 antialiased relative flex flex-col justify-between`}>
+=======
+      <head>
+        <link rel="icon" href="/icon.png" type="image/png" />
+        <link rel="shortcut icon" href="/icon.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/icon.png" />
+      </head>
+      <body className={`${dmSans.className} bg-slate-50 min-h-screen text-gray-900 antialiased relative`}>
+>>>>>>> eb81b6f80480ce0b518893f68e658413cd7980f8
         {/* Subtle global background texture using stadium wallpaper with high opacity overlay */}
-        <div 
-          aria-hidden="true" 
+        <div
+          aria-hidden="true"
           className="fixed inset-0 pointer-events-none z-0 bg-cover bg-center opacity-[0.035] filter saturate-50"
           style={{ backgroundImage: "url('/stadium-bg.jpg')" }}
         />

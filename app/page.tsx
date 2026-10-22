@@ -3,7 +3,7 @@
 import LoginButton from "./components/general/LoginButton";
 import { useAuth } from "./context/AuthContext";
 import Link from "next/link";
-import { Calendar, ShieldCheck, Clock, Award } from "lucide-react";
+import { Calendar, ShieldCheck, Clock } from "lucide-react";
 
 export default function Home() {
     const { userRole, loading } = useAuth();
@@ -11,7 +11,7 @@ export default function Home() {
 
     return (
         <div className="relative min-h-[calc(100vh-80px)] flex flex-col justify-center items-center px-4 py-16 overflow-hidden font-sans bg-black">
-            {/* Background Stadium - High Prominence with Cinematic Vignette (Inspired by Sybarite reference) */}
+            {/* Background Stadium - High Prominence with Cinematic Vignette */}
             <div 
                 className="absolute inset-0 bg-cover bg-center opacity-60 filter brightness-90 saturate-110 pointer-events-none scale-100 transition-all duration-700"
                 style={{ backgroundImage: "url('/stadium-bg.jpg')" }}
@@ -20,6 +20,7 @@ export default function Home() {
             <div className="absolute inset-0 bg-radial from-black/40 via-black/75 to-black/95 pointer-events-none" />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/80 pointer-events-none" />
 
+<<<<<<< HEAD
             <div className="relative z-10 flex flex-col items-center justify-center max-w-4xl text-center">
                 {/* Logo Oficial Canchas Dioguinho */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -31,17 +32,37 @@ export default function Home() {
 
                 <span className="inline-flex items-center gap-2 px-5 py-2 mb-6 text-xs sm:text-sm font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-500/40 rounded-full uppercase tracking-widest backdrop-blur-md shadow-[0_4px_20px_rgba(16,185,129,0.25)] hover:border-emerald-400 hover:text-white transition-all cursor-default text-glow-hover">
                     COMPLEJO DEPORTIVO DIOGUINHO · FÚTBOL DE ÉLITE
+=======
+            {/* Messi & Cristiano Ronaldo - Vivid & Clear on Sides */}
+            <div 
+                aria-hidden="true"
+                className="absolute left-[-20px] lg:left-4 bottom-0 w-72 sm:w-88 lg:w-[420px] h-[480px] bg-contain bg-no-repeat bg-bottom opacity-75 pointer-events-none filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.95)] contrast-110 transition-transform duration-500 hover:scale-105"
+                style={{ backgroundImage: "url('/messi-bg.jpg')" }}
+            />
+            <div 
+                aria-hidden="true"
+                className="absolute right-[-20px] lg:right-4 bottom-0 w-72 sm:w-88 lg:w-[420px] h-[480px] bg-contain bg-no-repeat bg-bottom opacity-75 pointer-events-none filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.95)] contrast-110 transition-transform duration-500 hover:scale-105"
+                style={{ backgroundImage: "url('/cr7-bg.jpg')" }}
+            />
+
+            <div className="relative z-10 flex flex-col items-center justify-center max-w-4xl text-center w-full">
+                {/* Formal Badge without Emojis */}
+                <span className="inline-flex items-center gap-2 px-5 py-2 mb-6 text-xs sm:text-sm font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-500/40 rounded-full uppercase tracking-widest backdrop-blur-md shadow-[0_4px_20px_rgba(16,185,129,0.25)] hover:border-emerald-400 hover:text-white transition-all cursor-default text-glow-hover">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                    COMPLEJO DEPORTIVO DIOGUINHO · FUTBOL DE ELITE
+>>>>>>> eb81b6f80480ce0b518893f68e658413cd7980f8
                 </span>
 
                 <h1 className="font-black text-4xl sm:text-6xl lg:text-7xl text-white mb-6 tracking-tight leading-[1.1] title-glow-hover cursor-default">
                     JUEGA COMO LOS GRANDES: <br className="hidden sm:inline" />
-                    RESERVA EN <span className="text-emerald-400 drop-shadow-[0_0_25px_rgba(52,211,153,0.8)]">FÚTBOL 5</span>
+                    RESERVA EN <span className="text-emerald-400 drop-shadow-[0_0_25px_rgba(52,211,153,0.8)]">FUTBOL 5</span>
                 </h1>
 
                 <p className="text-lg sm:text-2xl text-gray-200 mb-10 max-w-2xl font-medium leading-relaxed text-glow hover:text-white transition-colors duration-300">
                     10 canchas sintéticas de última generación. Consulta disponibilidad en tiempo real, reserva tu turno y vive la experiencia profesional.
                 </p>
 
+                {/* Acciones principales - Diseño formal y limpio sin emojis */}
                 <div className="flex flex-col sm:flex-row items-center gap-5 mb-16">
                     {loading ? (
                         <div className="h-14 w-48 bg-gray-800/80 animate-pulse rounded-full border border-gray-700" />
@@ -50,7 +71,7 @@ export default function Home() {
                             href="/booking"
                             className="bg-emerald-500 hover:bg-emerald-400 text-gray-950 text-base sm:text-lg font-extrabold px-10 py-4 rounded-full transition-all duration-300 shadow-[0_0_30px_rgba(16,185,129,0.5)] hover:shadow-[0_0_45px_rgba(16,185,129,0.8)] hover:-translate-y-1 hover:scale-105"
                         >
-                            + RESERVAR UNA CANCHA
+                            Reservar una Cancha
                         </Link>
                     ) : (
                         <div className="flex flex-col sm:flex-row gap-4 items-center">
@@ -58,7 +79,7 @@ export default function Home() {
                                 href="/booking"
                                 className="bg-emerald-500 hover:bg-emerald-400 text-gray-950 text-base sm:text-lg font-extrabold px-10 py-4 rounded-full transition-all duration-300 shadow-[0_0_30px_rgba(16,185,129,0.5)] hover:shadow-[0_0_45px_rgba(16,185,129,0.8)] hover:-translate-y-1 hover:scale-105"
                             >
-                                RESERVAR CANCHA
+                                Reservar Cancha
                             </Link>
                             <LoginButton />
                         </div>
@@ -73,13 +94,14 @@ export default function Home() {
                     )}
                 </div>
 
+                {/* Grid de características destacadas - Iconos Lucide formales */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-4xl text-left">
                     <div className="p-6 bg-black/60 hover:bg-black/80 backdrop-blur-md rounded-2xl border border-white/10 hover:border-emerald-500/50 shadow-2xl flex flex-col gap-2 transition-all duration-300 hover:-translate-y-1 group">
                         <div className="w-12 h-12 rounded-xl bg-emerald-950/80 text-emerald-400 border border-emerald-500/30 flex items-center justify-center group-hover:scale-110 transition-transform">
                             <Calendar className="w-6 h-6" />
                         </div>
                         <h2 className="font-extrabold text-xl text-white group-hover:text-emerald-300 transition-colors title-glow-hover">
-                            10 Canchas Pro
+                            10 Canchas Profesionales
                         </h2>
                         <p className="text-sm text-gray-300 font-medium group-hover:text-gray-100 transition-colors">
                             Grama sintética profesional con iluminación LED nocturna de potencia de estadio.
@@ -94,7 +116,7 @@ export default function Home() {
                             Horarios Flexibles
                         </h2>
                         <p className="text-sm text-gray-300 font-medium group-hover:text-gray-100 transition-colors">
-                            De 08:00 a 22:00 todos los días con disponibilidad en vivo por turnos.
+                            Atención de 08:00 a 22:00 todos los días con disponibilidad en vivo por turnos.
                         </p>
                     </div>
 
@@ -103,10 +125,10 @@ export default function Home() {
                             <ShieldCheck className="w-6 h-6" />
                         </div>
                         <h2 className="font-extrabold text-xl text-white group-hover:text-emerald-300 transition-colors title-glow-hover">
-                            Pago Seguro
+                            Pago y Validación Segura
                         </h2>
                         <p className="text-sm text-gray-300 font-medium group-hover:text-gray-100 transition-colors">
-                            Transferencias Banco Pichincha con verificación y confirmación inmediata.
+                            Transferencias bancarias con verificación de identidad y confirmación inmediata.
                         </p>
                     </div>
                 </div>

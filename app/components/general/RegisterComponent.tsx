@@ -5,12 +5,17 @@ import { useState, useRef, useEffect } from "react";
 import { Eye, EyeOff, Mail, AlertCircle, ArrowLeft, RefreshCw, KeyRound, Check } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import SuccessfulAuthentification from "./SuccessfulAuthentification";
+<<<<<<< HEAD
 import { motion } from "framer-motion";
+=======
+import CedulaInputField, { CedulaValidationState } from "./CedulaInputField";
+>>>>>>> eb81b6f80480ce0b518893f68e658413cd7980f8
 
 export default function RegisterComponent() {
     const searchParams = useSearchParams();
     const rawRedirect = searchParams.get("redirectTo");
     const redirectTo = rawRedirect ? `/login?redirectTo=${decodeURIComponent(rawRedirect)}` : "/login";
+    const initialCedula = searchParams.get("cedula") || "";
 
     // Paso del flujo: 1 = Formulario de datos, 2 = Confirmación con código de 6 dígitos
     const [step, setStep] = useState<1 | 2>(1);
@@ -22,6 +27,7 @@ export default function RegisterComponent() {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+<<<<<<< HEAD
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     // Mensajes de error específicos por campo
@@ -38,6 +44,22 @@ export default function RegisterComponent() {
     const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
     const [resendCooldown, setResendCooldown] = useState(0);
 
+=======
+    const [cedulaState, setCedulaState] = useState<CedulaValidationState>({
+        cedula: initialCedula,
+        isValidFormat: false,
+        isAvailable: false,
+        isChecking: false,
+        errorMessage: null,
+    });
+    const [formErrors, setFormErrors] = useState({
+        firstName: false,
+        lastName: false,
+        email: false,
+        password: false,
+        cedula: false,
+    });
+>>>>>>> eb81b6f80480ce0b518893f68e658413cd7980f8
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState<{ error: boolean; message: string }>({ error: false, message: "" });
     const [successful, setSuccessful] = useState(false);
@@ -141,6 +163,7 @@ export default function RegisterComponent() {
         const firstErr = validateName(firstName, "nombre");
         const lastErr = validateName(lastName, "apellido");
         
+<<<<<<< HEAD
         let passErr: string | undefined = undefined;
         if (!password.trim()) {
             passErr = "La contraseña es obligatoria.";
@@ -166,6 +189,34 @@ export default function RegisterComponent() {
         setFieldErrors(errors);
 
         if (emailErr || firstErr || lastErr || passErr || confirmErr) {
+=======
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        const isCedulaValid = cedulaState.isValidFormat && cedulaState.isAvailable && !cedulaState.isChecking;
+
+        const newFormErrors = {
+            firstName: !firstName.trim(),
+            lastName: !lastName.trim(),
+            email: !email.trim() || !emailRegex.test(email.trim()),
+            password: !password.trim() || password.length < 6,
+            cedula: !isCedulaValid,
+        };
+            
+        setFormErrors(newFormErrors);
+        
+        if (
+            newFormErrors.firstName || 
+            newFormErrors.lastName || 
+            newFormErrors.email || 
+            newFormErrors.password || 
+            newFormErrors.cedula
+        ) {
+            if (newFormErrors.cedula) {
+                setApiError({
+                    error: true,
+                    message: cedulaState.errorMessage || "Por favor ingresa una cédula ecuatoriana válida de 10 dígitos que no esté registrada.",
+                });
+            }
+>>>>>>> eb81b6f80480ce0b518893f68e658413cd7980f8
             return;
         }
 
@@ -291,15 +342,53 @@ export default function RegisterComponent() {
                     lastName: lastName.trim(),
                     email: email.trim().toLowerCase(),
                     password: password,
+<<<<<<< HEAD
                     code: fullCode
+=======
+                    email: email,
+                    cedula: cedulaState.cedula,
+>>>>>>> eb81b6f80480ce0b518893f68e658413cd7980f8
                 })
             });
 
             const data = await res.json();
 
             if (!res.ok) {
+<<<<<<< HEAD
                 setApiError({ error: true, message: data.error || "Error al verificar código." });
                 return;
+=======
+                const errMsg = data.error === "Email already exist" 
+                    ? "Este correo electrónico ya está registrado." 
+                    : (data.error ?? "Error al registrarse.");
+                setApiError({ error: true, message: errMsg });
+            } else {
+                setSuccessful(true);
+                try {
+                    const loginRes = await fetch("/api/auth/login", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            email: email,
+                            password: password
+                        })
+                    });
+
+                    if (!loginRes.ok) {
+                        setTimeout(() => {
+                            window.location.href = redirectTo;
+                        }, 750);
+                    } else {
+                        setTimeout(() => {
+                            const directRedirect = rawRedirect ?? "/reservations";
+                            window.location.href = directRedirect;
+                        }, 750);
+                    }
+                
+                } catch (error) {
+                    console.error('Error al iniciar sesión tras registrar:', error);
+                }
+>>>>>>> eb81b6f80480ce0b518893f68e658413cd7980f8
             }
 
             setSuccessful(true);
@@ -328,6 +417,7 @@ export default function RegisterComponent() {
 
             {successful && <SuccessfulAuthentification authType="Registration" />}
 
+<<<<<<< HEAD
             <div className="relative z-10 w-full max-w-lg p-7 sm:p-10 bg-black/85 backdrop-blur-2xl rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.95)] border border-white/15 text-white">
                 {/* Paso 1: Formulario Principal de Datos */}
                 {step === 1 && (
@@ -339,6 +429,31 @@ export default function RegisterComponent() {
                                 src="/logo.png" 
                                 alt="Canchas Dioguinho" 
                                 className="w-20 h-20 object-contain drop-shadow-[0_0_20px_rgba(52,211,153,0.5)] mb-2 hover:scale-105 transition-transform" 
+=======
+            <form onSubmit={handleRegister} className="relative z-10 flex flex-col text-center w-full max-w-lg p-8 sm:p-10 gap-6 bg-black/75 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-white/15 text-white">
+                <div>
+                    <img 
+                        src="/icon.png" 
+                        alt="Logo CanchasDioguinho" 
+                        className="w-12 h-12 mx-auto rounded-full object-cover border border-emerald-500/40 filter drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]" 
+                    />
+                    <h1 className="font-black text-3xl mt-3 text-white title-glow-hover">
+                        Crear Cuenta
+                    </h1>
+                    <p className="text-sm text-gray-300 mt-1 font-medium">Regístrate para reservar canchas y acceder a tus horarios</p>
+                </div>
+                
+                <div className="flex flex-col text-sm text-left gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-semibold text-gray-200">Nombre</label>
+                            <input 
+                                type="text"
+                                value={firstName}
+                                onChange={(event) => setFirstName(event.target.value)}
+                                placeholder="Tu nombre"
+                                className={`text-base outline-none border rounded-xl p-3.5 bg-black/50 text-white placeholder-gray-500 transition-all ${formErrors.firstName ? "border-red-500 bg-red-950/20" : "border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"}`}
+>>>>>>> eb81b6f80480ce0b518893f68e658413cd7980f8
                             />
                             <h1 className="font-black text-3xl text-white title-glow-hover">
                                 Crear Cuenta
@@ -535,12 +650,40 @@ export default function RegisterComponent() {
                             </div>
                         </div>
 
+<<<<<<< HEAD
                         {apiError.error && (
                             <div className="p-3 text-xs sm:text-sm text-red-300 bg-red-950/60 border border-red-500/40 rounded-xl font-medium flex items-start gap-2">
                                 <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
                                 <span>{apiError.message}</span>
                             </div>
                         )}
+=======
+                    {/* Nuevo Campo Cédula de Identidad con Validación Módulo 10 y Asíncrona */}
+                    <div className="flex flex-col gap-1.5">
+                        <CedulaInputField
+                            id="register-cedula-input"
+                            value={cedulaState.cedula}
+                            onChange={(state) => {
+                                setCedulaState(state);
+                                if (state.isValidFormat && state.isAvailable) {
+                                    setFormErrors((prev) => ({ ...prev, cedula: false }));
+                                }
+                            }}
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-sm font-semibold text-gray-200">Correo Electrónico</label>
+                        <input 
+                            type="email"
+                            value={email}
+                            onChange={(event) => setEmail(event.target.value)}
+                            placeholder="ejemplo@correo.com"
+                            className={`text-base outline-none border rounded-xl p-3.5 bg-black/50 text-white placeholder-gray-500 transition-all ${formErrors.email ? "border-red-500 bg-red-950/20" : "border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"}`}
+                        />
+                        {formErrors.email && <span className="text-xs text-red-400 font-medium">Ingresa un correo electrónico válido</span>}
+                    </div>
+>>>>>>> eb81b6f80480ce0b518893f68e658413cd7980f8
 
                         <div className="flex flex-col gap-3.5 mt-1">
                             <button
@@ -561,12 +704,20 @@ export default function RegisterComponent() {
                     </form>
                 )}
 
+<<<<<<< HEAD
                 {/* Paso 2: Verificación de Código de 6 Dígitos */}
                 {step === 2 && (
                     <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         className="flex flex-col gap-5 text-center"
+=======
+                <div className="flex flex-col gap-4 mt-2">
+                    <button
+                        type="submit" 
+                        disabled={isLoading || cedulaState.isChecking}
+                        className="text-base font-extrabold bg-emerald-500 hover:bg-emerald-400 text-gray-950 w-full py-3.5 rounded-xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:shadow-[0_0_30px_rgba(16,185,129,0.7)] disabled:opacity-50 cursor-pointer hover:scale-[1.02]"
+>>>>>>> eb81b6f80480ce0b518893f68e658413cd7980f8
                     >
                         <button
                             type="button"

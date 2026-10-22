@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS bookings (
 -- Migración: agregar columnas si ya existe la tabla (seguro para DBs existentes)
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS customer_name VARCHAR(128) DEFAULT NULL;
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS customer_id VARCHAR(64) DEFAULT NULL;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS cedula VARCHAR(10) UNIQUE DEFAULT NULL;
 
 -- 10 canchas de fútbol 5
 INSERT IGNORE INTO courts (court_name, sport) VALUES ('Cancha 1', 'futbol5');

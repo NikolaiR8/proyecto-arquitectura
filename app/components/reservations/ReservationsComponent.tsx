@@ -195,7 +195,7 @@ export default function ReservationsComponent() {
                     </div>
                 ) : displayed.length === 0 ? (
                     <div className="text-center py-16 px-4 bg-white rounded-3xl border border-gray-100 shadow-xs">
-                        <span className="text-4xl">⚽</span>
+                        <img src="/icon.png" alt="Logo" className="w-12 h-12 mx-auto rounded-full object-cover opacity-80 mb-2 border border-gray-200" />
                         <p className="text-base font-semibold text-gray-700 mt-3">
                             {activeTab === "upcoming"
                                 ? "No tienes reservas próximas activas."
