@@ -1,27 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import LoginButton from "./components/general/LoginButton";
 import { useAuth } from "./context/AuthContext";
 import Link from "next/link";
-import { Calendar, ShieldCheck, Clock, Award, CheckCircle2, UserCheck, ArrowRight } from "lucide-react";
-import CedulaInputField, { CedulaValidationState } from "./components/general/CedulaInputField";
+import { Calendar, ShieldCheck, Clock } from "lucide-react";
 
 export default function Home() {
     const { userRole, loading } = useAuth();
     const isLoggedIn = userRole !== null;
-
-    const [cedulaState, setCedulaState] = useState<CedulaValidationState>({
-        cedula: "",
-        isValidFormat: false,
-        isAvailable: false,
-        isChecking: false,
-        errorMessage: null,
-    });
-
-    const handleCedulaChange = (state: CedulaValidationState) => {
-        setCedulaState(state);
-    };
 
     return (
         <div className="relative min-h-[calc(100vh-80px)] flex flex-col justify-center items-center px-4 py-16 overflow-hidden font-sans bg-black">
@@ -58,66 +44,9 @@ export default function Home() {
                     RESERVA EN <span className="text-emerald-400 drop-shadow-[0_0_25px_rgba(52,211,153,0.8)]">FUTBOL 5</span>
                 </h1>
 
-                <p className="text-lg sm:text-2xl text-gray-200 mb-8 max-w-2xl font-medium leading-relaxed text-glow hover:text-white transition-colors duration-300">
+                <p className="text-lg sm:text-2xl text-gray-200 mb-10 max-w-2xl font-medium leading-relaxed text-glow hover:text-white transition-colors duration-300">
                     10 canchas sintéticas de última generación. Consulta disponibilidad en tiempo real, reserva tu turno y vive la experiencia profesional.
                 </p>
-
-                {/* Nuevo Módulo de Cédula de Identidad: Validación Módulo 10 y Asíncrona */}
-                <div className="w-full max-w-lg mb-10 p-6 sm:p-7 bg-black/80 backdrop-blur-xl rounded-3xl border border-white/15 shadow-[0_15px_40px_rgba(0,0,0,0.85)] text-left">
-                    <div className="mb-4">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                                <UserCheck className="w-5 h-5 text-emerald-400" />
-                                Validación de Cédula de Identidad
-                            </h2>
-                            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/30 text-emerald-300">
-                                Módulo 10
-                            </span>
-                        </div>
-                        <p className="text-xs text-gray-400 mt-1">
-                            Ingresa tu documento para verificar registro previo o habilitar una nueva reserva en el sistema.
-                        </p>
-                    </div>
-
-                    <CedulaInputField
-                        id="home-cedula-input"
-                        label="Cédula de Identidad (Ecuador)"
-                        placeholder="Ej. 1710034065"
-                        onChange={handleCedulaChange}
-                    />
-
-                    {/* Estado de resultado e interacción */}
-                    {cedulaState.isAvailable && !cedulaState.isChecking && (
-                        <div className="mt-4 p-3.5 rounded-xl bg-emerald-950/50 border border-emerald-500/40 flex items-center justify-between gap-3 animate-fadeIn">
-                            <div className="flex items-center gap-2 text-xs text-emerald-300 font-medium">
-                                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                                <span>Cédula disponible. Puedes proceder al registro de usuario.</span>
-                            </div>
-                            <Link
-                                href={`/register?cedula=${cedulaState.cedula}`}
-                                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-gray-950 text-xs font-bold rounded-lg transition-all"
-                            >
-                                Registrarse
-                                <ArrowRight className="w-3.5 h-3.5" />
-                            </Link>
-                        </div>
-                    )}
-
-                    {cedulaState.isValidFormat && !cedulaState.isAvailable && !cedulaState.isChecking && cedulaState.errorMessage?.includes("registrada") && (
-                        <div className="mt-4 p-3.5 rounded-xl bg-red-950/40 border border-red-500/40 flex items-center justify-between gap-3 animate-fadeIn">
-                            <div className="text-xs text-red-300 font-medium">
-                                Usuario ya registrado con esta cédula.
-                            </div>
-                            <Link
-                                href="/login"
-                                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-lg border border-white/20 transition-all"
-                            >
-                                Iniciar Sesión
-                                <ArrowRight className="w-3.5 h-3.5" />
-                            </Link>
-                        </div>
-                    )}
-                </div>
 
                 {/* Acciones principales - Diseño formal y limpio sin emojis */}
                 <div className="flex flex-col sm:flex-row items-center gap-5 mb-16">
