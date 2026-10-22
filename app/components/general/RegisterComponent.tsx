@@ -149,7 +149,7 @@ export default function RegisterComponent() {
             <form onSubmit={handleRegister} className="relative z-10 flex flex-col text-center w-full max-w-lg p-8 sm:p-10 gap-6 bg-black/75 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-white/15 text-white">
                 <div>
                     <img 
-                        src="/favicon.png" 
+                        src="/icon.png" 
                         alt="Logo CanchasDioguinho" 
                         className="w-12 h-12 mx-auto rounded-full object-cover border border-emerald-500/40 filter drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]" 
                     />

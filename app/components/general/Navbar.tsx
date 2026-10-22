@@ -27,7 +27,7 @@ export default function Navbar() {
         <header className="bg-black/90 backdrop-blur-md border-b border-white/10 h-20 text-lg flex items-center px-6 md:px-10 text-white sticky top-0 z-50 shadow-2xl">
             <div className="flex items-center">
                 <Link href="/" className="flex items-center gap-2 group">
-                    <img src="/favicon.png" alt="Logo CanchasDioguinho" className="w-8 h-8 rounded-full object-cover group-hover:scale-110 transition-transform border border-emerald-500/40" />
+                    <img src="/icon.png" alt="Logo CanchasDioguinho" className="w-8 h-8 rounded-full object-cover group-hover:scale-110 transition-transform border border-emerald-500/40" />
                     <h1 className="text-2xl font-black text-emerald-400 tracking-tight title-glow-hover">
                         CanchasDioguinho
                     </h1>

@@ -25,7 +25,9 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
-        <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="icon" href="/icon.png" type="image/png" />
+        <link rel="shortcut icon" href="/icon.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/icon.png" />
       </head>
       <body className={`${dmSans.className} bg-slate-50 min-h-screen text-gray-900 antialiased relative`}>
         {/* Subtle global background texture using stadium wallpaper with high opacity overlay */}
