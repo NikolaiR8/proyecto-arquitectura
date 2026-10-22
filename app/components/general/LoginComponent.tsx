@@ -76,7 +76,6 @@ export default function LoginComponent() {
 
             {successful && <SuccessfulAuthentification authType="Login" />}
 
-<<<<<<< HEAD
             <form onSubmit={handleLogin} className="relative z-10 flex flex-col text-center w-full max-w-md p-8 sm:p-10 gap-6 bg-black/85 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-white/15 text-white">
                 <div className="flex flex-col items-center">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -86,12 +85,6 @@ export default function LoginComponent() {
                         className="w-20 h-20 object-contain drop-shadow-[0_0_20px_rgba(52,211,153,0.5)] mb-2 hover:scale-105 transition-transform" 
                     />
                     <h1 className="font-black text-3xl text-white title-glow-hover">
-=======
-            <form onSubmit={handleLogin} className="relative z-10 flex flex-col text-center w-full max-w-md p-8 sm:p-10 gap-6 bg-black/75 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-white/15 text-white">
-                <div>
-                    <img src="/icon.png" alt="Logo CanchasDioguinho" className="w-12 h-12 mx-auto rounded-full object-cover border border-emerald-500/40 filter drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]" />
-                    <h1 className="font-black text-3xl mt-3 text-white title-glow-hover">
->>>>>>> eb81b6f80480ce0b518893f68e658413cd7980f8
                         Iniciar Sesión
                     </h1>
                     <p className="text-sm text-gray-300 mt-1 font-medium">Ingresa a tu cuenta para gestionar tus reservas</p>

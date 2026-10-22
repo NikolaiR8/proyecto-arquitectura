@@ -43,7 +43,6 @@ export default function Navbar() {
     return (
         <header className="bg-black/90 backdrop-blur-md border-b border-white/10 h-20 text-lg flex items-center px-6 md:px-10 text-white sticky top-0 z-50 shadow-2xl">
             <div className="flex items-center">
-<<<<<<< HEAD
                 <Link href="/" className="flex items-center gap-3 group">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
@@ -51,10 +50,6 @@ export default function Navbar() {
                         alt="Canchas Dioguinho" 
                         className="w-10 h-10 object-contain drop-shadow-[0_0_15px_rgba(52,211,153,0.6)] group-hover:scale-110 transition-transform" 
                     />
-=======
-                <Link href="/" className="flex items-center gap-2 group">
-                    <img src="/icon.png" alt="Logo CanchasDioguinho" className="w-8 h-8 rounded-full object-cover group-hover:scale-110 transition-transform border border-emerald-500/40" />
->>>>>>> eb81b6f80480ce0b518893f68e658413cd7980f8
                     <h1 className="text-2xl font-black text-emerald-400 tracking-tight title-glow-hover">
                         CanchasDioguinho
                     </h1>

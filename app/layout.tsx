@@ -26,16 +26,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-<<<<<<< HEAD
-      <body className={`${dmSans.className} bg-slate-50 min-h-screen text-gray-900 antialiased relative flex flex-col justify-between`}>
-=======
       <head>
-        <link rel="icon" href="/icon.png" type="image/png" />
-        <link rel="shortcut icon" href="/icon.png" type="image/png" />
-        <link rel="apple-touch-icon" href="/icon.png" />
+        <link rel="icon" href="/logo.png" type="image/png" />
+        <link rel="shortcut icon" href="/logo.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/logo.png" />
       </head>
-      <body className={`${dmSans.className} bg-slate-50 min-h-screen text-gray-900 antialiased relative`}>
->>>>>>> eb81b6f80480ce0b518893f68e658413cd7980f8
+      <body className={`${dmSans.className} bg-slate-50 min-h-screen text-gray-900 antialiased relative flex flex-col justify-between`}>
         {/* Subtle global background texture using stadium wallpaper with high opacity overlay */}
         <div
           aria-hidden="true"
