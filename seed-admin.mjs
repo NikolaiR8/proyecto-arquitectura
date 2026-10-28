@@ -38,7 +38,7 @@ async function main() {
       password,
       database,
       port,
-      ssl: process.env.DATABASE_SSL === "true" ? { rejectUnauthorized: false } : undefined,
+      ssl: { minVersion: "TLSv1.2", rejectUnauthorized: true },
     });
 
     console.log("Conexión exitosa a MySQL.");

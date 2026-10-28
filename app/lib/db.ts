@@ -6,7 +6,7 @@ export const pool = process.env.DATABASE_URL
         connectionLimit: 10,
         waitForConnections: true,
         dateStrings: true,
-        ssl: process.env.DATABASE_SSL === "false" ? undefined : { rejectUnauthorized: false },
+        ssl: { minVersion: "TLSv1.2", rejectUnauthorized: true },
     })
     : mysql.createPool({
         host: process.env.DATABASE_HOST,
@@ -17,7 +17,7 @@ export const pool = process.env.DATABASE_URL
         connectionLimit: 10,
         waitForConnections: true,
         dateStrings: true,
-        ssl: process.env.DATABASE_SSL === "true" ? { rejectUnauthorized: false } : undefined,
+        ssl: { minVersion: "TLSv1.2", rejectUnauthorized: true },
     });
 
 let schemaEnsured = false;
@@ -54,7 +54,8 @@ export async function ensureDatabaseSchema() {
                 { name: "position", sql: "ALTER TABLE users ADD COLUMN position VARCHAR(64) DEFAULT NULL" },
                 { name: "preferred_foot", sql: "ALTER TABLE users ADD COLUMN preferred_foot VARCHAR(32) DEFAULT NULL" },
                 { name: "favorite_court", sql: "ALTER TABLE users ADD COLUMN favorite_court VARCHAR(64) DEFAULT NULL" },
-                { name: "email_verified", sql: "ALTER TABLE users ADD COLUMN email_verified BOOLEAN DEFAULT FALSE" }
+                { name: "email_verified", sql: "ALTER TABLE users ADD COLUMN email_verified BOOLEAN DEFAULT FALSE" },
+                { name: "cedula", sql: "ALTER TABLE users ADD COLUMN cedula VARCHAR(10) DEFAULT NULL" }
             ];
 
             for (const m of migrations) {
