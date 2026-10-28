@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
-import { Eye, EyeOff, Mail, AlertCircle, ArrowLeft, RefreshCw, KeyRound, Check } from "lucide-react";
+import { Eye, EyeOff, Mail, AlertCircle, ArrowLeft, RefreshCw, KeyRound, Check, Info, ShieldCheck } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import SuccessfulAuthentification from "./SuccessfulAuthentification";
 import { motion } from "framer-motion";
+import { validatePassword, validateRegisterEmail } from "../../lib/auth-validation";
 
 export default function RegisterComponent() {
     const searchParams = useSearchParams();
@@ -51,60 +52,10 @@ export default function RegisterComponent() {
         return () => clearInterval(interval);
     }, [resendCooldown]);
 
-    // Función de validación exhaustiva de correo electrónico
+    // Función de validación exhaustiva de correo electrónico (exclusivo Gmail)
     const validateEmail = (value: string): string | null => {
-        const trimmed = value.trim();
-        if (!trimmed) {
-            return "El correo electrónico es obligatorio.";
-        }
-
-        // Detectar espacios
-        if (/\s/.test(trimmed)) {
-            return "El correo no puede contener espacios en blanco.";
-        }
-
-        // Detectar caracteres no permitidos como #, $, %, &, !, *, etc.
-        const forbiddenCharMatch = trimmed.match(/[#$%&!*^~`+=/\\|{}[\]:;"'<>?]/);
-        if (forbiddenCharMatch) {
-            return `El correo contiene un carácter no permitido ('${forbiddenCharMatch[0]}'). Solo se permiten letras, números, puntos, guiones y @.`;
-        }
-
-        // Validar arroba
-        const atCount = (trimmed.match(/@/g) || []).length;
-        if (atCount === 0) {
-            return "Falta el símbolo '@' en el correo electrónico (ej: usuario@ejemplo.com).";
-        }
-        if (atCount > 1) {
-            return "El correo electrónico solo puede contener un símbolo '@'.";
-        }
-
-        const [localPart, domainPart] = trimmed.split("@");
-
-        if (!localPart) {
-            return "Falta el nombre de usuario antes del '@'.";
-        }
-
-        if (!domainPart) {
-            return "Falta el dominio después del '@' (ej: gmail.com, hotmail.com).";
-        }
-
-        if (!domainPart.includes(".")) {
-            return "El dominio del correo debe incluir una extensión con punto (ej: .com, .edu, .ec).";
-        }
-
-        const domainSegments = domainPart.split(".");
-        const topLevelDomain = domainSegments[domainSegments.length - 1];
-
-        if (topLevelDomain.length < 2) {
-            return "La extensión del correo debe tener al menos 2 letras (ej: .com, .ec).";
-        }
-
-        const generalRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        if (!generalRegex.test(trimmed)) {
-            return "El formato del correo no es válido. Verifica que esté escrito correctamente.";
-        }
-
-        return null;
+        const res = validateRegisterEmail(value);
+        return res.isValid ? null : (res.error || "Correo inválido.");
     };
 
     // Validar nombre y apellido
@@ -133,6 +84,21 @@ export default function RegisterComponent() {
         }
     };
 
+    // Estado calculado de reglas de contraseña en vivo
+    const passwordEvaluation = validatePassword(password);
+    const passwordRules = passwordEvaluation.rules;
+
+    // Manejar cambio de contraseña en vivo
+    const handlePasswordChange = (val: string) => {
+        setPassword(val);
+        if (fieldErrors.password) {
+            const check = validatePassword(val);
+            if (check.isValid) {
+                setFieldErrors((prev) => ({ ...prev, password: undefined }));
+            }
+        }
+    };
+
     // Paso 1: Validar todo y enviar código de confirmación
     const handleRequestCode = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -140,12 +106,15 @@ export default function RegisterComponent() {
         const emailErr = validateEmail(email);
         const firstErr = validateName(firstName, "nombre");
         const lastErr = validateName(lastName, "apellido");
-        
+
         let passErr: string | undefined = undefined;
         if (!password.trim()) {
             passErr = "La contraseña es obligatoria.";
-        } else if (password.length < 6) {
-            passErr = "La contraseña debe tener al menos 6 caracteres.";
+        } else {
+            const passCheck = validatePassword(password);
+            if (!passCheck.isValid) {
+                passErr = passCheck.error;
+            }
         }
 
         let confirmErr: string | undefined = undefined;
@@ -319,7 +288,7 @@ export default function RegisterComponent() {
     return (
         <main className="relative min-h-[calc(100vh-80px)] flex flex-col justify-center items-center px-4 py-12 bg-black font-sans overflow-hidden">
             {/* Fondo de Estadio con Viñeta limpia y sin figuras */}
-            <div 
+            <div
                 aria-hidden="true"
                 className="absolute inset-0 bg-cover bg-center opacity-30 filter brightness-85 saturate-110 pointer-events-none"
                 style={{ backgroundImage: "url('/stadium-bg.jpg')" }}
@@ -335,10 +304,10 @@ export default function RegisterComponent() {
                         <div className="text-center flex flex-col items-center">
                             {/* Logo Oficial Canchas Dioguinho */}
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img 
-                                src="/logo.png" 
-                                alt="Canchas Dioguinho" 
-                                className="w-20 h-20 object-contain drop-shadow-[0_0_20px_rgba(52,211,153,0.5)] mb-2 hover:scale-105 transition-transform" 
+                            <img
+                                src="/logo.png"
+                                alt="Canchas Dioguinho"
+                                className="w-20 h-20 object-contain drop-shadow-[0_0_20px_rgba(52,211,153,0.5)] mb-2 hover:scale-105 transition-transform"
                             />
                             <h1 className="font-black text-3xl text-white title-glow-hover">
                                 Crear Cuenta
@@ -355,7 +324,7 @@ export default function RegisterComponent() {
                                     <label className="text-xs font-bold uppercase tracking-wider text-gray-200">
                                         Nombre
                                     </label>
-                                    <input 
+                                    <input
                                         type="text"
                                         value={firstName}
                                         onChange={(e) => {
@@ -369,11 +338,10 @@ export default function RegisterComponent() {
                                             setFieldErrors(prev => ({ ...prev, firstName: err || undefined }));
                                         }}
                                         placeholder="Ej: Nikolái"
-                                        className={`text-sm sm:text-base outline-none border rounded-xl p-3 bg-black/60 text-white placeholder-gray-500 transition-all ${
-                                            fieldErrors.firstName 
-                                                ? "border-red-500 bg-red-950/30 ring-1 ring-red-500/50" 
+                                        className={`text-sm sm:text-base outline-none border rounded-xl p-3 bg-black/60 text-white placeholder-gray-500 transition-all ${fieldErrors.firstName
+                                                ? "border-red-500 bg-red-950/30 ring-1 ring-red-500/50"
                                                 : "border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
-                                        }`}
+                                            }`}
                                     />
                                     {fieldErrors.firstName && (
                                         <span className="text-xs text-red-400 font-medium flex items-center gap-1">
@@ -387,7 +355,7 @@ export default function RegisterComponent() {
                                     <label className="text-xs font-bold uppercase tracking-wider text-gray-200">
                                         Apellido
                                     </label>
-                                    <input 
+                                    <input
                                         type="text"
                                         value={lastName}
                                         onChange={(e) => {
@@ -401,11 +369,10 @@ export default function RegisterComponent() {
                                             setFieldErrors(prev => ({ ...prev, lastName: err || undefined }));
                                         }}
                                         placeholder="Ej: Molina"
-                                        className={`text-sm sm:text-base outline-none border rounded-xl p-3 bg-black/60 text-white placeholder-gray-500 transition-all ${
-                                            fieldErrors.lastName 
-                                                ? "border-red-500 bg-red-950/30 ring-1 ring-red-500/50" 
+                                        className={`text-sm sm:text-base outline-none border rounded-xl p-3 bg-black/60 text-white placeholder-gray-500 transition-all ${fieldErrors.lastName
+                                                ? "border-red-500 bg-red-950/30 ring-1 ring-red-500/50"
                                                 : "border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
-                                        }`}
+                                            }`}
                                     />
                                     {fieldErrors.lastName && (
                                         <span className="text-xs text-red-400 font-medium flex items-center gap-1">
@@ -416,14 +383,32 @@ export default function RegisterComponent() {
                                 </div>
                             </div>
 
+                            {/* Aviso de Dominio Admitido */}
+                            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-950/60 via-emerald-950/30 to-black/60 border border-emerald-500/40 flex items-start gap-3">
+                                <div className="p-1.5 bg-emerald-500/20 text-emerald-400 rounded-lg shrink-0 mt-0.5">
+                                    <Info className="w-4 h-4" />
+                                </div>
+                                <div className="text-xs space-y-0.5 text-left">
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-bold text-emerald-300">Dominio de Correo Admitido</p>
+                                        <span className="bg-emerald-500/25 text-emerald-300 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border border-emerald-400/40">
+                                            Únicamente @gmail.com
+                                        </span>
+                                    </div>
+                                    <p className="text-gray-300 text-[11px] leading-relaxed">
+                                        Sólo se admiten cuentas de correo @gmail.com.
+                                    </p>
+                                </div>
+                            </div>
+
                             {/* Correo Electrónico con Validación Detallada */}
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-xs font-bold uppercase tracking-wider text-gray-200 flex items-center justify-between">
-                                    <span>Correo Electrónico</span>
-                                    <span className="text-[11px] text-gray-400 font-normal lowercase">te enviaremos un código</span>
+                                    <span>Correo Electrónico (Gmail)</span>
+                                    <span className="text-[11px] text-emerald-400 font-medium">debe ser @gmail.com</span>
                                 </label>
                                 <div className="relative">
-                                    <input 
+                                    <input
                                         type="email"
                                         value={email}
                                         onChange={(e) => handleEmailChange(e.target.value)}
@@ -431,14 +416,13 @@ export default function RegisterComponent() {
                                             const err = validateEmail(email);
                                             setFieldErrors(prev => ({ ...prev, email: err || undefined }));
                                         }}
-                                        placeholder="ejemplo@correo.com"
-                                        className={`w-full text-sm sm:text-base outline-none border rounded-xl p-3 pr-10 bg-black/60 text-white placeholder-gray-500 transition-all ${
-                                            fieldErrors.email 
-                                                ? "border-red-500 bg-red-950/30 ring-1 ring-red-500/50" 
+                                        placeholder="ejemplo@gmail.com"
+                                        className={`w-full text-sm sm:text-base outline-none border rounded-xl p-3 pr-10 bg-black/60 text-white placeholder-gray-500 transition-all ${fieldErrors.email
+                                                ? "border-red-500 bg-red-950/30 ring-1 ring-red-500/50"
                                                 : email && !fieldErrors.email
-                                                ? "border-emerald-500/50 focus:border-emerald-400"
-                                                : "border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
-                                        }`}
+                                                    ? "border-emerald-500/50 focus:border-emerald-400"
+                                                    : "border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
+                                            }`}
                                     />
                                     <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
                                         {fieldErrors.email ? (
@@ -451,34 +435,28 @@ export default function RegisterComponent() {
                                     </div>
                                 </div>
                                 {fieldErrors.email && (
-                                    <span className="text-xs text-red-400 font-semibold bg-red-950/40 p-2 rounded-lg border border-red-500/30 flex items-start gap-1.5">
+                                    <span className="text-xs text-red-400 font-semibold bg-red-950/40 p-2.5 rounded-lg border border-red-500/30 flex items-start gap-1.5">
                                         <AlertCircle className="w-4 h-4 shrink-0 text-red-400 mt-0.5" />
                                         <span>{fieldErrors.email}</span>
                                     </span>
                                 )}
                             </div>
 
-                            {/* Contraseña */}
+                            {/* Contraseña con Requisitos Estándar */}
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-xs font-bold uppercase tracking-wider text-gray-200">
                                     Contraseña
                                 </label>
                                 <div className="relative">
-                                    <input 
+                                    <input
                                         type={showPassword ? "text" : "password"}
                                         value={password}
-                                        onChange={(e) => {
-                                            setPassword(e.target.value);
-                                            if (fieldErrors.password && e.target.value.length >= 6) {
-                                                setFieldErrors(prev => ({ ...prev, password: undefined }));
-                                            }
-                                        }}
-                                        className={`w-full text-sm sm:text-base outline-none border rounded-xl p-3 pr-10 bg-black/60 text-white placeholder-gray-500 transition-all ${
-                                            fieldErrors.password 
-                                                ? "border-red-500 bg-red-950/30 ring-1 ring-red-500/50" 
+                                        onChange={(e) => handlePasswordChange(e.target.value)}
+                                        className={`w-full text-sm sm:text-base outline-none border rounded-xl p-3 pr-10 bg-black/60 text-white placeholder-gray-500 transition-all ${fieldErrors.password
+                                                ? "border-red-500 bg-red-950/30 ring-1 ring-red-500/50"
                                                 : "border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
-                                        }`}
-                                        placeholder="Mínimo 6 caracteres"
+                                            }`}
+                                        placeholder="Crea una contraseña segura"
                                     />
                                     <button
                                         type="button"
@@ -494,6 +472,41 @@ export default function RegisterComponent() {
                                         {fieldErrors.password}
                                     </span>
                                 )}
+
+                                {/* Checklist interactivo de requisitos de contraseña */}
+                                <div className="p-3 bg-black/50 rounded-xl border border-white/10 space-y-2 mt-1">
+                                    <div className="flex items-center justify-between text-[11px] font-semibold text-gray-300">
+                                        <span className="flex items-center gap-1.5">
+                                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                                            Requisitos de seguridad:
+                                        </span>
+                                        <span className={passwordEvaluation.isValid ? "text-emerald-400 font-bold" : "text-gray-400"}>
+                                            {passwordEvaluation.isValid ? "¡Contraseña segura! ✓" : "Incompleta"}
+                                        </span>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px]">
+                                        <div className={`flex items-center gap-1.5 transition-colors ${passwordRules.minLength ? "text-emerald-400 font-medium" : "text-gray-400"}`}>
+                                            {passwordRules.minLength ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mx-1 shrink-0" />}
+                                            <span>Mínimo 8 caracteres</span>
+                                        </div>
+                                        <div className={`flex items-center gap-1.5 transition-colors ${passwordRules.hasNumber ? "text-emerald-400 font-medium" : "text-gray-400"}`}>
+                                            {passwordRules.hasNumber ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mx-1 shrink-0" />}
+                                            <span>Al menos 1 número (0-9)</span>
+                                        </div>
+                                        <div className={`flex items-center gap-1.5 transition-colors ${passwordRules.hasUpper ? "text-emerald-400 font-medium" : "text-gray-400"}`}>
+                                            {passwordRules.hasUpper ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mx-1 shrink-0" />}
+                                            <span>Una mayúscula (A-Z)</span>
+                                        </div>
+                                        <div className={`flex items-center gap-1.5 transition-colors ${passwordRules.hasLower ? "text-emerald-400 font-medium" : "text-gray-400"}`}>
+                                            {passwordRules.hasLower ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mx-1 shrink-0" />}
+                                            <span>Una minúscula (a-z)</span>
+                                        </div>
+                                        <div className={`flex items-center gap-1.5 transition-colors sm:col-span-2 ${passwordRules.hasSpecial ? "text-emerald-400 font-medium" : "text-gray-400"}`}>
+                                            {passwordRules.hasSpecial ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mx-1 shrink-0" />}
+                                            <span>Carácter especial (! @ # $ % * ? . &)</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Confirmar Contraseña */}
@@ -502,7 +515,7 @@ export default function RegisterComponent() {
                                     Confirmar Contraseña
                                 </label>
                                 <div className="relative">
-                                    <input 
+                                    <input
                                         type={showConfirmPassword ? "text" : "password"}
                                         value={confirmPassword}
                                         onChange={(e) => {
@@ -511,11 +524,10 @@ export default function RegisterComponent() {
                                                 setFieldErrors(prev => ({ ...prev, confirmPassword: undefined }));
                                             }
                                         }}
-                                        className={`w-full text-sm sm:text-base outline-none border rounded-xl p-3 pr-10 bg-black/60 text-white placeholder-gray-500 transition-all ${
-                                            fieldErrors.confirmPassword 
-                                                ? "border-red-500 bg-red-950/30 ring-1 ring-red-500/50" 
+                                        className={`w-full text-sm sm:text-base outline-none border rounded-xl p-3 pr-10 bg-black/60 text-white placeholder-gray-500 transition-all ${fieldErrors.confirmPassword
+                                                ? "border-red-500 bg-red-950/30 ring-1 ring-red-500/50"
                                                 : "border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"
-                                        }`}
+                                            }`}
                                         placeholder="Repite tu contraseña"
                                     />
                                     <button
@@ -544,13 +556,13 @@ export default function RegisterComponent() {
 
                         <div className="flex flex-col gap-3.5 mt-1">
                             <button
-                                type="submit" 
+                                type="submit"
                                 disabled={isLoading}
                                 className="text-base font-extrabold bg-emerald-500 hover:bg-emerald-400 text-gray-950 w-full py-3.5 rounded-xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:shadow-[0_0_30px_rgba(16,185,129,0.7)] disabled:opacity-50 cursor-pointer hover:scale-[1.02]"
                             >
                                 {isLoading ? "Enviando código al correo..." : "Continuar y Enviar Código ➔"}
                             </button>
-                            
+
                             <p className="text-sm text-gray-300 text-center">
                                 ¿Ya tienes una cuenta?{" "}
                                 <Link href="/login" className="text-emerald-400 font-bold hover:underline text-glow-hover">

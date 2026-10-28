@@ -3,6 +3,7 @@ import { generateVerificationCode, sendVerificationEmail } from "../../../lib/ma
 import { saveVerificationCode } from "../../../lib/verificationStore";
 import { pool } from "../../../lib/db";
 import { RowDataPacket } from "mysql2";
+import { validateRegisterEmail } from "../../../lib/auth-validation";
 
 export async function POST(request: NextRequest) {
     try {
@@ -14,10 +15,10 @@ export async function POST(request: NextRequest) {
 
         const cleanEmail = email.trim().toLowerCase();
 
-        // Validar formato estricto de correo
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        if (!emailRegex.test(cleanEmail)) {
-            return NextResponse.json({ error: "El formato del correo electrónico no es válido." }, { status: 400 });
+        // Validar formato estricto y que el dominio sea exclusivamente Gmail
+        const emailCheck = validateRegisterEmail(cleanEmail);
+        if (!emailCheck.isValid) {
+            return NextResponse.json({ error: emailCheck.error }, { status: 400 });
         }
 
         // Verificar si el correo ya está registrado en la base de datos

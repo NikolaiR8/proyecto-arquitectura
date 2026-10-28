@@ -25,6 +25,15 @@ export async function sendVerificationEmail(
 
     const recipientName = firstName ? firstName.charAt(0).toUpperCase() + firstName.slice(1) : "Futbolista";
 
+    // Salvaguarda: validar que el destinatario sea exclusivamente Gmail
+    const cleanTo = (toEmail || "").trim().toLowerCase();
+    if (!cleanTo.endsWith("@gmail.com") && !cleanTo.endsWith("@googlemail.com")) {
+        return {
+            success: false,
+            message: "Únicamente se admiten correos electrónicos del dominio @gmail.com."
+        };
+    }
+
     // Si no hay configuración SMTP en producción/despliegue
     if (!smtpHost || !smtpUser || !smtpPass) {
         console.error("[MAILER ERROR] Variables SMTP no configuradas en el entorno (SMTP_HOST, SMTP_USER, SMTP_PASS).");

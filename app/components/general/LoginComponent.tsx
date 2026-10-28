@@ -97,7 +97,7 @@ export default function LoginComponent() {
                             type="email"
                             value={email}
                             onChange={(event) => setEmail(event.target.value)}
-                            placeholder="ejemplo@correo.com"
+                            placeholder="ejemplo@gmail.com"
                             className={`text-base outline-none border rounded-xl p-3.5 bg-black/50 text-white placeholder-gray-500 transition-all ${formErrors.email ? "border-red-500 bg-red-950/20" : "border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20"}`}
                         />
                         {formErrors.email && <span className="text-xs text-red-400 font-medium">El correo no puede estar vacío</span>}

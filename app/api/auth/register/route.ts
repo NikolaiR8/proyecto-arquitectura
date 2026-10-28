@@ -5,6 +5,7 @@ import { SignJWT } from "jose";
 import { cookies } from "next/headers";
 import { ResultSetHeader } from "mysql2";
 import { verifyCode, deleteVerificationCode } from "../../../lib/verificationStore";
+import { validatePassword, validateRegisterEmail } from "../../../lib/auth-validation";
 
 export async function POST(request: NextRequest) {
     try {
@@ -18,14 +19,16 @@ export async function POST(request: NextRequest) {
         const cleanFirst = firstName.trim();
         const cleanLast = lastName.trim();
 
-        // Validar formato de correo estricto
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        if (!emailRegex.test(cleanEmail)) {
-            return NextResponse.json({ error: "El formato del correo electrónico no es válido." }, { status: 400 });
+        // Validar formato de correo y dominio Gmail exclusivo
+        const emailCheck = validateRegisterEmail(cleanEmail);
+        if (!emailCheck.isValid) {
+            return NextResponse.json({ error: emailCheck.error }, { status: 400 });
         }
 
-        if (password.length < 6) {
-            return NextResponse.json({ error: "La contraseña debe tener al menos 6 caracteres." }, { status: 400 });
+        // Validar robustez de la contraseña (longitud 8+, mayúscula, minúscula, número, carácter especial)
+        const passCheck = validatePassword(password);
+        if (!passCheck.isValid) {
+            return NextResponse.json({ error: passCheck.error }, { status: 400 });
         }
 
         // Si se envió un código de verificación, validarlo

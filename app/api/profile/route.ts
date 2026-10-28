@@ -4,6 +4,7 @@ import { jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import { pool, ensureDatabaseSchema } from "../../lib/db";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
+import { validatePassword, validateRegisterEmail } from "../../lib/auth-validation";
 
 async function getAuthUserId(): Promise<number | null> {
     const cookieStore = await cookies();
@@ -126,9 +127,9 @@ export async function PUT(request: NextRequest) {
         }
 
         const cleanEmail = email.trim().toLowerCase();
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        if (!emailRegex.test(cleanEmail)) {
-            return NextResponse.json({ error: "El formato del correo electrónico no es válido." }, { status: 400 });
+        const emailCheck = validateRegisterEmail(cleanEmail);
+        if (!emailCheck.isValid) {
+            return NextResponse.json({ error: emailCheck.error }, { status: 400 });
         }
 
         // Verificar si el correo ya está en uso por otro usuario distinto
@@ -204,8 +205,9 @@ export async function PATCH(request: NextRequest) {
             return NextResponse.json({ error: "Debes ingresar tu contraseña actual y la nueva contraseña." }, { status: 400 });
         }
 
-        if (newPassword.length < 6) {
-            return NextResponse.json({ error: "La nueva contraseña debe tener al menos 6 caracteres." }, { status: 400 });
+        const passCheck = validatePassword(newPassword);
+        if (!passCheck.isValid) {
+            return NextResponse.json({ error: passCheck.error }, { status: 400 });
         }
 
         if (confirmPassword && newPassword !== confirmPassword) {

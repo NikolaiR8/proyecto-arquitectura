@@ -5,10 +5,11 @@ import { useAuth } from "../context/AuthContext";
 import { 
     User, Mail, Phone, Lock, Camera, CheckCircle2, 
     Shield, Calendar, Trophy, Sparkles, AlertCircle, 
-    Eye, EyeOff, Save, Trash2, ArrowRight
+    Eye, EyeOff, Save, Trash2, ArrowRight, Check, Info, ShieldCheck
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { validatePassword, validateRegisterEmail } from "../lib/auth-validation";
 
 interface UserProfile {
     userId: number;
@@ -142,6 +143,13 @@ export default function ProfilePage() {
         setSaving(true);
         setAlert(null);
 
+        const emailCheck = validateRegisterEmail(formData.email);
+        if (!emailCheck.isValid) {
+            setAlert({ type: "error", message: emailCheck.error || "Correo inválido." });
+            setSaving(false);
+            return;
+        }
+
         try {
             const res = await fetch("/api/profile", {
                 method: "PUT",
@@ -187,8 +195,9 @@ export default function ProfilePage() {
             return;
         }
 
-        if (passwords.newPassword.length < 6) {
-            setPassAlert({ type: "error", message: "La nueva contraseña debe tener mínimo 6 caracteres." });
+        const passCheck = validatePassword(passwords.newPassword);
+        if (!passCheck.isValid) {
+            setPassAlert({ type: "error", message: passCheck.error || "La nueva contraseña no cumple los requisitos de seguridad." });
             return;
         }
 
@@ -491,17 +500,25 @@ export default function ProfilePage() {
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold uppercase tracking-wider text-gray-300 flex items-center gap-1.5">
-                                    <Mail className="w-3.5 h-3.5 text-emerald-400" /> Correo Electrónico
+                                <label className="text-xs font-bold uppercase tracking-wider text-gray-300 flex items-center justify-between">
+                                    <span className="flex items-center gap-1.5">
+                                        <Mail className="w-3.5 h-3.5 text-emerald-400" /> Correo Electrónico
+                                    </span>
+                                    <span className="text-[11px] text-emerald-400 font-semibold lowercase">
+                                        exclusivo @gmail.com
+                                    </span>
                                 </label>
                                 <input
                                     type="email"
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     required
-                                    placeholder="tu-correo@ejemplo.com"
+                                    placeholder="tu-correo@gmail.com"
                                     className="w-full bg-black/60 border border-white/20 rounded-xl p-3.5 text-white placeholder-gray-500 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                                 />
+                                <p className="text-[11px] text-gray-400">
+                                    Nota: El servicio de notificaciones únicamente admite cuentas @gmail.com.
+                                </p>
                             </div>
 
                             <div className="space-y-1.5">
@@ -704,28 +721,69 @@ export default function ProfilePage() {
                                 </div>
                             </div>
 
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold uppercase tracking-wider text-gray-300">
-                                    Nueva Contraseña (mínimo 6 caracteres)
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type={showPass.next ? "text" : "password"}
-                                        value={passwords.newPassword}
-                                        onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
-                                        required
-                                        placeholder="Mínimo 6 caracteres"
-                                        className="w-full bg-black/60 border border-white/20 rounded-xl p-3.5 pr-12 text-white placeholder-gray-500 focus:border-emerald-400 outline-none transition-all"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPass({ ...showPass, next: !showPass.next })}
-                                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                                    >
-                                        {showPass.next ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
-                                    </button>
-                                </div>
-                            </div>
+                            {(() => {
+                                const passCheck = validatePassword(passwords.newPassword);
+                                const rules = passCheck.rules;
+                                return (
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-bold uppercase tracking-wider text-gray-300">
+                                            Nueva Contraseña
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type={showPass.next ? "text" : "password"}
+                                                value={passwords.newPassword}
+                                                onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
+                                                required
+                                                placeholder="Crea una contraseña segura"
+                                                className="w-full bg-black/60 border border-white/20 rounded-xl p-3.5 pr-12 text-white placeholder-gray-500 focus:border-emerald-400 outline-none transition-all"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPass({ ...showPass, next: !showPass.next })}
+                                                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                                            >
+                                                {showPass.next ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                                            </button>
+                                        </div>
+
+                                        {/* Checklist de requisitos para nueva contraseña */}
+                                        <div className="p-3 bg-black/50 rounded-xl border border-white/10 space-y-2 mt-1">
+                                            <div className="flex items-center justify-between text-[11px] font-semibold text-gray-300">
+                                                <span className="flex items-center gap-1.5">
+                                                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                                                    Requisitos de seguridad:
+                                                </span>
+                                                <span className={passCheck.isValid ? "text-emerald-400 font-bold" : "text-gray-400"}>
+                                                    {passCheck.isValid ? "¡Contraseña segura! ✓" : "Incompleta"}
+                                                </span>
+                                            </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px]">
+                                                <div className={`flex items-center gap-1.5 transition-colors ${rules.minLength ? "text-emerald-400 font-medium" : "text-gray-400"}`}>
+                                                    {rules.minLength ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mx-1 shrink-0" />}
+                                                    <span>Mínimo 8 caracteres</span>
+                                                </div>
+                                                <div className={`flex items-center gap-1.5 transition-colors ${rules.hasNumber ? "text-emerald-400 font-medium" : "text-gray-400"}`}>
+                                                    {rules.hasNumber ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mx-1 shrink-0" />}
+                                                    <span>Al menos 1 número (0-9)</span>
+                                                </div>
+                                                <div className={`flex items-center gap-1.5 transition-colors ${rules.hasUpper ? "text-emerald-400 font-medium" : "text-gray-400"}`}>
+                                                    {rules.hasUpper ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mx-1 shrink-0" />}
+                                                    <span>Una mayúscula (A-Z)</span>
+                                                </div>
+                                                <div className={`flex items-center gap-1.5 transition-colors ${rules.hasLower ? "text-emerald-400 font-medium" : "text-gray-400"}`}>
+                                                    {rules.hasLower ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mx-1 shrink-0" />}
+                                                    <span>Una minúscula (a-z)</span>
+                                                </div>
+                                                <div className={`flex items-center gap-1.5 transition-colors sm:col-span-2 ${rules.hasSpecial ? "text-emerald-400 font-medium" : "text-gray-400"}`}>
+                                                    {rules.hasSpecial ? <Check className="w-3.5 h-3.5 shrink-0" /> : <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mx-1 shrink-0" />}
+                                                    <span>Carácter especial (! @ # $ % * ? . &)</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
 
                             <div className="space-y-1.5">
                                 <label className="text-xs font-bold uppercase tracking-wider text-gray-300">
